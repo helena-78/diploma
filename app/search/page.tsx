@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";  // Add this line
+import { useState } from "react";  
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Youtube} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignInButton } from "@/components/sign-in-button"
 import { SignUpButton } from "@/components/sign-up-button"
-// import AuthModal from "@/components/auth-modal";
 import { Search } from "lucide-react"
 
 
 export default function Home() {
-  // const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,21 +26,20 @@ export default function Home() {
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/find-a-pet" className="text-sm font-medium">
-            FIND A PET
-          </Link>
-          <Link href="/about-us" className="text-sm font-medium">
-            ABOUT US
-          </Link>
-          <Link href="/how-it-works" className="text-sm font-medium">
-            HOW IT WORKS
-          </Link>
-        </nav>
 
         <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2">
+            <Image 
+            src="/saved.svg" 
+            alt="Saved" 
+            width={16} 
+            height={16} 
+            className="w-5 h-5"
+          />
+          </Link>
           <SignInButton />
           <SignUpButton />
+
           <div className="flex gap-2 text-sm">
             <button className="font-medium">ENG</button>
             <span className="text-gray-300">|</span>
@@ -52,29 +49,7 @@ export default function Home() {
       </header>
       
       <main className="flex-1 flex flex-col md:flex-row bg-[url('/paw.svg')] bg-cover bg-center">
-      <div className="container mx-auto px-4 py-12 relative z-10 flex flex-col items-center">
-          <div className="max-w-[600px] text-center">
-            <h1 className="text-[40px] leading-[1.2] font-serif mb-4">
-              Get your family
-              <br />a new member.
-            </h1>
-            <p className="text-lg mb-8">Open your doors and hearts to pets in need of a home</p>
-
-            <div className="flex gap-4 max-w-[500px] mx-auto">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Zip code or City"
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              </div>
-            </div>
-          </div>
-          <div className="w-full flex justify-center absolute bottom-0">
-            <img src="/dog.svg" alt="Dog resting on a pillow" className="w-48" />
-          </div>
-        </div>
+      
       </main>
   
       <footer className="bg-[#1a2c3d] text-white py-8 px-12">

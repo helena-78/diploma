@@ -111,7 +111,7 @@ export function SignInModal({ trigger }: SignInModalProps) {
 
           <p className="text-sm text-center text-gray-500">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-gray-900 underline underline-offset-2">
+            <Link href="#" className="text-gray-900 underline underline-offset-2">
               Sign up
             </Link>
           </p>

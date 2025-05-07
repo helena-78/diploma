@@ -1,222 +1,601 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Link from "next/link"
+import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export default function SignupForm() {
+  const [step, setStep] = useState(1)
   const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    zipCode: "",
+    gender: "",
+    birthMonth: "",
+    birthDate: "",
+    birthYear: "",
+    hasPetExperience: "",
+    hasAllergies: "",
+    livingSpace: "",
+    petSpending: "",
+    timeCommitment: "",
+    agreeToTerms: false,
+  })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState("")
+  const router = useRouter()
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    })
+
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      })
+    }
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({
+      ...formData,
+      [name]: value,
+    })
+
+    // Clear error when user selects
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      })
+    }
+  }
+
+  const validateStep1 = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required"
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required"
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required"
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid"
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required"
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters"
+    }
+
+    if (!formData.zipCode.trim()) {
+      newErrors.zipCode = "ZIP/Postal code is required"
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = "Please select your gender"
+    }
+
+    if (!formData.birthMonth || !formData.birthDate || !formData.birthYear) {
+      newErrors.birthDate = "Please select your full date of birth"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateStep2 = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.hasPetExperience) {
+      newErrors.hasPetExperience = "Please answer this question"
+    }
+
+    if (!formData.hasAllergies) {
+      newErrors.hasAllergies = "Please answer this question"
+    }
+
+    if (!formData.livingSpace) {
+      newErrors.livingSpace = "Please select your living space"
+    }
+
+    if (!formData.petSpending) {
+      newErrors.petSpending = "Please select your expected spending"
+    }
+
+    if (!formData.timeCommitment) {
+      newErrors.timeCommitment = "Please select your time commitment"
+    }
+
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the terms and privacy policy"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleNextStep = () => {
+    if (validateStep1()) {
+      setStep(2)
+      // Scroll to top when changing steps
+      window.scrollTo(0, 0)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (step === 1) {
+      handleNextStep()
+    } else {
+      if (validateStep2()) {
+        try {
+          // Show loading state
+          setIsSubmitting(true)
+
+          // Simulate API call with a timeout
+          // In a real app, you would make an actual API request here
+          await new Promise((resolve) => setTimeout(resolve, 1500))
+
+          console.log("Form submitted:", formData)
+
+          // Redirect to user page after successful signup
+          router.push("/user/dashboard")
+        } catch (error) {
+          console.error("Signup error:", error)
+          setSubmissionError("An error occurred during signup. Please try again.")
+        } finally {
+          setIsSubmitting(false)
+        }
+      }
+    }
+  }
+
+  // Generate month options
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ]
+
+  // Generate date options (1-31)
+  const dates = Array.from({ length: 31 }, (_, i) => i + 1)
+
+  // Generate year options (current year - 100 to current year - 18)
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 100 - 18 + 1 }, (_, i) => currentYear - 18 - i)
+
+  // Living space options
+  const livingSpaceOptions = ["Less than 50 m²", "50-100 m²", "100-150 m²", "150-200 m²", "More than 200 m²"]
+
+  // Spending options
+  const spendingOptions = [
+    "Less than $50/month",
+    "$50-100/month",
+    "$100-200/month",
+    "$200-300/month",
+    "More than $300/month",
+  ]
+
+  // Time commitment options
+  const timeOptions = [
+    "Less than 1 hour/day",
+    "1-2 hours/day",
+    "2-3 hours/day",
+    "3-4 hours/day",
+    "More than 4 hours/day",
+  ]
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-medium">Create an account</h1>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-serif">
+      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold">Create an account</h1>
         </div>
 
-        <Button variant="outline" className="w-full h-11 font-normal justify-center gap-2 border-gray-300">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            />
-          </svg>
-          Sign up with Google
-        </Button>
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                  step >= 1 ? "bg-black text-white" : "bg-gray-200 text-gray-500",
+                )}
+              >
+                1
+              </div>
+              <span className={cn("text-xs mt-1", step >= 1 ? "text-black" : "text-gray-500")}>Basic Info</span>
+            </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">OR</span>
+            <div className="flex-1 h-px bg-gray-200 mx-2"></div>
+
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                  step >= 2 ? "bg-black text-white" : "bg-gray-200 text-gray-500",
+                )}
+              >
+                2
+              </div>
+              <span className={cn("text-xs mt-1", step >= 2 ? "text-black" : "text-gray-500")}>Questionnaire</span>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <p className="text-sm text-center">Sign up with your email address</p>
+        <form onSubmit={handleSubmit}>
+          {step === 1 && (
+            <div className="space-y-6">
+              <div className="flex items-center mb-4">
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2",
+                    "bg-black text-white",
+                  )}
+                >
+                  1
+                </div>
+                <h2 className="text-lg font-medium">Basic info</h2>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
-              <Input id="lastName" />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First name</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className={errors.firstName ? "border-red-500" : ""}
+                  />
+                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="Enter your email address" />
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last name</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className={errors.lastName ? "border-red-500" : ""}
+                  />
+                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={errors.email ? "border-red-500" : ""}
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password ? (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                ) : (
+                  <p className="text-gray-500 text-xs mt-1">
+                    Use 8 or more characters with a mix of letters, numbers & symbols
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="zipCode">ZIP/ Postal Code</Label>
+                <Input
+                  id="zipCode"
+                  name="zipCode"
+                  placeholder="Enter your ZIP code"
+                  value={formData.zipCode}
+                  onChange={handleInputChange}
+                  className={errors.zipCode ? "border-red-500" : ""}
+                />
+                {errors.zipCode && <p className="text-red-500 text-xs mt-1">{errors.zipCode}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label>What's your gender?</Label>
+                <RadioGroup
+                  value={formData.gender}
+                  onValueChange={(value) => handleSelectChange("gender", value)}
+                  className="flex gap-6 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="female" />
+                    <Label htmlFor="female" className="cursor-pointer">
+                      Female
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="male" id="male" />
+                    <Label htmlFor="male" className="cursor-pointer">
+                      Male
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label>What's your date of birth?</Label>
+                <div className="grid grid-cols-3 gap-4 mt-2">
+                  <Select
+                    value={formData.birthMonth}
+                    onValueChange={(value) => handleSelectChange("birthMonth", value)}
+                  >
+                    <SelectTrigger className={errors.birthDate ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month, index) => (
+                        <SelectItem key={index} value={(index + 1).toString()}>
+                          {month}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={formData.birthDate} onValueChange={(value) => handleSelectChange("birthDate", value)}>
+                    <SelectTrigger className={errors.birthDate ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dates.map((date) => (
+                        <SelectItem key={date} value={date.toString()}>
+                          {date}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={formData.birthYear} onValueChange={(value) => handleSelectChange("birthYear", value)}>
+                    <SelectTrigger className={errors.birthDate ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {errors.birthDate && <p className="text-red-500 text-xs mt-1">{errors.birthDate}</p>}
+              </div>
+
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="h-5 px-2 text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
+                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 flex items-center justify-center gap-2"
+                onClick={handleNextStep}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Hide
+                Next
+                <ArrowRight size={16} />
               </Button>
             </div>
-            <Input id="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" />
-            <p className="text-xs text-gray-500">Use 8 or more characters with a mix of letters, numbers & symbols.</p>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="zipCode">ZIP/ Postal Code</Label>
-            <Input id="zipCode" placeholder="Enter your ZIP code" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>What's your gender?</Label>
-            <RadioGroup defaultValue="female" className="flex gap-6">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="female" id="female" />
-                <Label htmlFor="female" className="font-normal">
-                  Female
-                </Label>
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="flex items-center mb-4">
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2",
+                    "bg-black text-white",
+                  )}
+                >
+                  1
+                </div>
+                <h2 className="text-lg font-medium">Questionnaire</h2>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="male" id="male" />
-                <Label htmlFor="male" className="font-normal">
-                  Male
-                </Label>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Do you have a previous experience of owning a pet(s)?</Label>
+                  <RadioGroup
+                    value={formData.hasPetExperience}
+                    onValueChange={(value) => handleSelectChange("hasPetExperience", value)}
+                    className="flex gap-6 mt-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes" id="pet-exp-yes" />
+                      <Label htmlFor="pet-exp-yes" className="cursor-pointer">
+                        Yes
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="pet-exp-no" />
+                      <Label htmlFor="pet-exp-no" className="cursor-pointer">
+                        No
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {errors.hasPetExperience && <p className="text-red-500 text-xs mt-1">{errors.hasPetExperience}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Are you allergic to animal coat?</Label>
+                  <RadioGroup
+                    value={formData.hasAllergies}
+                    onValueChange={(value) => handleSelectChange("hasAllergies", value)}
+                    className="flex gap-6 mt-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes" id="allergies-yes" />
+                      <Label htmlFor="allergies-yes" className="cursor-pointer">
+                        Yes
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="allergies-no" />
+                      <Label htmlFor="allergies-no" className="cursor-pointer">
+                        No
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {errors.hasAllergies && <p className="text-red-500 text-xs mt-1">{errors.hasAllergies}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Please specify the square meters of the space a pet(s) would live in</Label>
+                  <Select
+                    value={formData.livingSpace}
+                    onValueChange={(value) => handleSelectChange("livingSpace", value)}
+                  >
+                    <SelectTrigger className={errors.livingSpace ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Square meters" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {livingSpaceOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.livingSpace && <p className="text-red-500 text-xs mt-1">{errors.livingSpace}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>What would be the amount of spendings on a pet(s)?</Label>
+                  <Select
+                    value={formData.petSpending}
+                    onValueChange={(value) => handleSelectChange("petSpending", value)}
+                  >
+                    <SelectTrigger className={errors.petSpending ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Spendings" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {spendingOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.petSpending && <p className="text-red-500 text-xs mt-1">{errors.petSpending}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>How much time would you spend on the pet(s) (walking, playing, training)?</Label>
+                  <Select
+                    value={formData.timeCommitment}
+                    onValueChange={(value) => handleSelectChange("timeCommitment", value)}
+                  >
+                    <SelectTrigger className={errors.timeCommitment ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Time spending" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.timeCommitment && <p className="text-red-500 text-xs mt-1">{errors.timeCommitment}</p>}
+                </div>
+
+                <div className="flex items-start space-x-2 mt-4">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                  <Label htmlFor="terms" className="text-sm">
+                    By creating an account, you agree to the{" "}
+                    <Link href="/terms" className="text-blue-600 hover:underline">
+                      Terms of use
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-blue-600 hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </Label>
+                </div>
+                {errors.agreeToTerms && <p className="text-red-500 text-xs">{errors.agreeToTerms}</p>}
               </div>
-            </RadioGroup>
-          </div>
 
-          <div className="space-y-2">
-            <Label>What's your date of birth?</Label>
-            <div className="grid grid-cols-3 gap-4">
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                  ].map((month) => (
-                    <SelectItem key={month} value={month.toLowerCase()}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Date" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                    <SelectItem key={day} value={day.toString()}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-4">
+                <Button
+                  type="submit"
+                  className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Signing up..." : "Sign up"}
+                </Button>
+                {submissionError && <p className="text-red-500 text-sm text-center mt-2">{submissionError}</p>}
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>How many dogs and/or cats do you have?</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="# dogs" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i).map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="# cats" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i).map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-2">
-            <Checkbox id="terms" className="mt-1" />
-            <Label htmlFor="terms" className="text-sm font-normal leading-tight">
-              Share my registration data with our content providers for marketing purposes.
-            </Label>
-          </div>
-
-          <p className="text-sm text-center">
-            By creating an account, you agree to the{" "}
-            <Link href="#" className="underline underline-offset-2">
-              Terms of use
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="underline underline-offset-2">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
-          <Button className="w-full bg-gray-400 hover:bg-gray-500">Sign up</Button>
-
-        </div>
+          )}
+        </form>
       </div>
     </div>
   )

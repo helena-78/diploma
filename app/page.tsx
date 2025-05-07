@@ -15,7 +15,7 @@ export default function Home() {
   // const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image 
@@ -29,10 +29,10 @@ export default function Home() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/find-a-pet" className="text-sm font-medium">
+          <Link href="/search" className="text-sm font-medium">
             FIND A PET
           </Link>
-          <Link href="/about-us" className="text-sm font-medium">
+          <Link href="/about" className="text-sm font-medium">
             ABOUT US
           </Link>
           <Link href="/how-it-works" className="text-sm font-medium">

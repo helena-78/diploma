@@ -15,6 +15,7 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ onClose }: SignInFormProps) {
+  
   const [showPassword, setShowPassword] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
@@ -69,7 +70,6 @@ export function SignInForm({ onClose }: SignInFormProps) {
         </div>
 
         <form onSubmit={handleSignIn} className="space-y-4">
-
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" placeholder="Enter your email address" required />
@@ -109,7 +109,7 @@ export function SignInForm({ onClose }: SignInFormProps) {
 
           <p className="text-sm text-center text-gray-500">
             Don't have an account?{" "}
-            <Link href="signup" className="text-gray-900 underline underline-offset-2">
+            <Link href="#" className="text-gray-900 underline underline-offset-2">
               Sign up
             </Link>
           </p>

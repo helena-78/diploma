@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronDown } from "lucide-react"
 
 type FilterOption = {
@@ -15,27 +15,139 @@ type FilterCategory = {
 
 export default function FilterSidebar() {
   const [filters, setFilters] = useState({
-    type: "Any",
+    species: "Any",
     breed: "Any",
     age: "Any",
     size: "Any",
     gender: "Any",
+    city: "Any",
     coatLength: "Any",
     goodWithKids: "Any",
     adoptionType: "Any",
     daysOnPlatform: "Any",
   })
+  const dogBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    { label: "Labrador", value: "Labrador" },
+    { label: "German Shepherd", value: "German Shepherd" },
+    { label: "Golden Retriever", value: "Golden Retriever" },
+    { label: "Bulldog", value: "Bulldog" },
+    { label: "Beagle", value: "Beagle" },
+    { label: "Poodle", value: "Poodle" },
+    { label: "Boxer", value: "Boxer" },
+    { label: "Siberian Husky", value: "Siberian Husky" },
+    { label: "Dachshund", value: "Dachshund" },
+  ]
+
+  const catBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    { label: "Maine Coon", value: "Maine Coon" },
+    { label: "Ragdoll", value: "Ragdoll" },
+    { label: "Siamese", value: "Siamese" },
+    { label: "British Shorthair", value: "British Shorthair" },
+    { label: "Bengal", value: "Bengal" },
+    { label: "Persian", value: "Persian" },
+  ]
+
+  const birdBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    { label: "Budgerigar", value: "Budgerigar" },
+    { label: "Cockatiel", value: "Cockatiel" },
+    { label: "African Grey Parrot", value: "African Grey Parrot" },
+    { label: "Canary", value: "Canary" },
+    { label: "Parakeet", value: "Parakeet" },
+  ]
+
+  const smallAndFurryBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    { label: "Hamster", value: "Hamster" },
+    { label: "Rat", value: "Rat" },
+    { label: "Rabbit", value: "Rabbit" },
+    { label: "Pig", value: "Pig" },
+    { label: "Chinchilla", value: "Chinchilla" },
+  ]
+
+  const reptileBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    { label: "Iguana", value: "Iguana" },
+    { label: "Chameleon", value: "Chameleon" },
+    { label: "Tortoise", value: "Tortoise" },
+  ]
+
+  const otherBreeds: FilterOption[] = [{ label: "Any", value: "Any" }]
+
+  const anyBreeds: FilterOption[] = [
+    { label: "Any", value: "Any" },
+    ...dogBreeds.slice(1),
+    ...catBreeds.slice(1),
+    ...birdBreeds.slice(1),
+    ...smallAndFurryBreeds.slice(1),
+    ...reptileBreeds.slice(1),
+  ]
+  // State to track current breed options
+  const [breedOptions, setBreedOptions] = useState<FilterOption[]>(anyBreeds)
+
+  useEffect(() => {
+    let newBreedOptions: FilterOption[]
+
+    switch (filters.species) {
+      case "Dog":
+        newBreedOptions = dogBreeds
+        break
+      case "Cat":
+        newBreedOptions = catBreeds
+        break
+      case "Bird":
+        newBreedOptions = birdBreeds
+        break
+      case "Small & Furry":
+        newBreedOptions = smallAndFurryBreeds
+        break
+      case "Reptile":
+        newBreedOptions = reptileBreeds
+        break
+      default:
+        newBreedOptions = anyBreeds
+    }
+
+    setBreedOptions(newBreedOptions)
+
+    // Reset breed to "Any" if current selection isn't in the new options
+    if (!newBreedOptions.some((breed) => breed.value === filters.breed)) {
+      setFilters((prev) => ({ ...prev, breed: "Any" }))
+    }
+  }, [filters.species])
 
   const filterCategories: FilterCategory[] = [
     {
-      name: "BREED",
+      name: "SPECIES",
       options: [
         { label: "Any", value: "Any" },
-        { label: "Labrador", value: "Labrador" },
-        { label: "German Shepherd", value: "German Shepherd" },
-        { label: "Golden Retriever", value: "Golden Retriever" },
-        { label: "Bulldog", value: "Bulldog" },
-        { label: "Beagle", value: "Beagle" },
+        { label: "Dog", value: "Dog" },
+        { label: "Cat", value: "Cat" },
+        { label: "Bird", value: "Bird" },
+        { label: "Small & Furry", value: "Small & Furry" },
+        { label: "Reptile", value: "Reptile" },
+        { label: "Other", value: "Other" },
+      ],
+    },
+    {
+      name: "BREED",
+      options: breedOptions,
+    },
+    {
+      name: "CITY",
+      options: [
+        { label: "Any", value: "Any" },
+        { label: "New York, NY", value: "New York, NY" },
+        { label: "Los Angeles, CA", value: "Los Angeles, CA" },
+        { label: "Chicago, IL", value: "Chicago, IL" },
+        { label: "Houston, TX", value: "Houston, TX" },
+        { label: "Phoenix, AZ", value: "Phoenix, AZ" },
+        { label: "Philadelphia, PA", value: "Philadelphia, PA" },
+        { label: "San Antonio, TX", value: "San Antonio, TX" },
+        { label: "San Diego, CA", value: "San Diego, CA" },
+        { label: "Dallas, TX", value: "Dallas, TX" },
       ],
     },
     {

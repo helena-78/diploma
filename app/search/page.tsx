@@ -96,9 +96,10 @@ const pets = [
   },
 ]
 
-export default function Home() {
+export default function SearchPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
@@ -106,6 +107,12 @@ export default function Home() {
     if (storedFavorites) {
       setFavorites(JSON.parse(storedFavorites))
     }
+    
+    const loggedInStatus = localStorage.getItem("isLoggedIn")
+    if (loggedInStatus === "true") {
+      setIsLoggedIn(true)
+    }
+
     setIsLoading(false)
   }, [])
 
@@ -153,8 +160,49 @@ export default function Home() {
           />
           ({favorites.length})
           </Link>
-          <SignInButton />
-          <SignUpButton />
+
+          {isLoggedIn ? (
+            <div className="relative group">
+              <button className="flex items-center text-gray-700 hover:text-black">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-5 w-5 mr-1"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>My Account</span>
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200 hidden group-hover:block">
+                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  Profile
+                </Link>
+                <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  Settings
+                </Link>
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    localStorage.setItem("isLoggedIn", "false")
+                    setIsLoggedIn(false)
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+            <SignInButton />
+            <SignUpButton />
+            </>
+          )}
 
           <div className="flex gap-2 text-sm">
             <button className="font-medium">ENG</button>

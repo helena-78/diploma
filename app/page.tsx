@@ -71,9 +71,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="w-full flex justify-center absolute bottom-0">
-            <img src="/dog.svg" alt="Dog resting on a pillow" className="w-48" />
-          </div>
         </div>
       </main>
   

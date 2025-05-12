@@ -1,16 +1,13 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react" 
-import Image from "next/image";
-import Link from "next/link";
-import { Facebook, Instagram, Youtube} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Facebook, Instagram, Youtube, ChevronDown } from "lucide-react"
 import { SignInButton } from "@/components/sign-in-button"
 import { SignUpButton } from "@/components/sign-up-button"
-import { Search } from "lucide-react"
 import FilterSidebar from "@/components/filter-sidebar"
 import PetCard from "@/components/pet-card"
-import { Heart } from "lucide-react"
 
 const pets = [
   {
@@ -100,6 +97,8 @@ export default function SearchPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
@@ -107,7 +106,7 @@ export default function SearchPage() {
     if (storedFavorites) {
       setFavorites(JSON.parse(storedFavorites))
     }
-    
+
     const loggedInStatus = localStorage.getItem("isLoggedIn")
     if (loggedInStatus === "true") {
       setIsLoggedIn(true)
@@ -116,6 +115,21 @@ export default function SearchPage() {
     setIsLoading(false)
   }, [])
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) && isDropdownOpen) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isDropdownOpen])
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -123,18 +137,12 @@ export default function SearchPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image 
-          src="/logo.svg" 
-          alt="Logo" 
-          width={32} 
-          height={32} 
-          className="w-8 h-8"
-        />
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} className="w-8 h-8" />
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
@@ -151,56 +159,76 @@ export default function SearchPage() {
 
         <div className="flex items-center gap-4">
           <Link href="/favorites" className="flex items-center gap-2">
-            <Image 
-            src="/saved.svg" 
-            alt="Saved" 
-            width={16} 
-            height={16} 
-            className="w-5 h-5"
-          />
-          ({favorites.length})
+            <Image src="/saved.svg" alt="Saved" width={16} height={16} className="w-5 h-5" />({favorites.length})
           </Link>
 
           {isLoggedIn ? (
-            <div className="relative group">
-              <button className="flex items-center text-gray-700 hover:text-black">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-5 w-5 mr-1"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>My Account</span>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                aria-haspopup="true"
+                aria-expanded={isDropdownOpen}
+              >
+                <div className="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-gray-600"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span className="ml-2 text-gray-600">My Account</span>
+                  <ChevronDown
+                    className={`ml-1 h-4 w-4 text-gray-600 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </div>
               </button>
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200 hidden group-hover:block">
-                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  Profile
-                </Link>
-                <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  Settings
-                </Link>
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    localStorage.setItem("isLoggedIn", "false")
-                    setIsLoggedIn(false)
-                  }}
+
+              {isDropdownOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-md py-1 z-10 border border-gray-100"
+                  role="menu"
+                  aria-orientation="vertical"
                 >
-                  Sign out
-                </button>
-              </div>
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                    role="menuitem"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                    role="menuitem"
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                    onClick={() => {
+                      localStorage.setItem("isLoggedIn", "false")
+                      setIsLoggedIn(false)
+                      setIsDropdownOpen(false)
+                    }}
+                    role="menuitem"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>
-            <SignInButton />
-            <SignUpButton />
+              <SignInButton />
+              <SignUpButton />
             </>
           )}
 
@@ -211,32 +239,30 @@ export default function SearchPage() {
           </div>
         </div>
       </header>
-      
-      
-        <div className="flex min-h-screen">
+
+      <div className="flex min-h-screen">
         <FilterSidebar />
-          <main className="flex-1 p-8">
-            <h1 className="text-3xl font-bold mb-6">Pet Listings</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pets.map((pet) => (
-                <Link key={pet.id} href={`/pets/${pet.id}`}>
-                  <PetCard
-                    key={pet.id}
-                    name={pet.name}
-                    breed={pet.breed}
-                    age={pet.age}
-                    gender={pet.gender}
-                    location={pet.location}
-                    imageUrl={pet.imageUrl}
-                    isFavorite={favorites.includes(pet.id)}
-                  />
-                </Link>
-              ))}
-            </div>
-          </main>
-        </div>
-      
-  
+        <main className="flex-1 p-8">
+          <h1 className="text-3xl font-bold mb-6">Pet Listings</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pets.map((pet) => (
+              <Link key={pet.id} href={`/pets/${pet.id}`}>
+                <PetCard
+                  key={pet.id}
+                  name={pet.name}
+                  breed={pet.breed}
+                  age={pet.age}
+                  gender={pet.gender}
+                  location={pet.location}
+                  imageUrl={pet.imageUrl}
+                  isFavorite={favorites.includes(pet.id)}
+                />
+              </Link>
+            ))}
+          </div>
+        </main>
+      </div>
+
       <footer className="bg-[#1a2c3d] text-white py-8 px-12">
         <div className="grid grid-cols-2 gap-8">
           <div>
@@ -264,5 +290,5 @@ export default function SearchPage() {
         </div>
       </footer>
     </div>
-  );
+  )
 }

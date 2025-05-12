@@ -1,62 +1,36 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Eye, EyeOff, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X, Eye, EyeOff } from "lucide-react"
+import { loginUser } from "@/app/actions/auth"
+import { useToast } from "@/hooks/use-toast"
 
-interface SignInFormProps {
+interface LoginFormProps {
   onClose: () => void
 }
 
-export function SignInForm({ onClose }: SignInFormProps) {
+export function LoginForm({ onClose }: LoginFormProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const formRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (overlayRef.current && e.target === overlayRef.current) {
-        onClose()
-      }
-    }
-
-    document.addEventListener("keydown", handleEscape)
-    document.addEventListener("mousedown", handleClickOutside)
-
-    // Prevent scrolling when modal is open
-    document.body.style.overflow = "hidden"
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape)
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.body.style.overflow = "auto"
-    }
-  }, [onClose])
-
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
     try {
-      // In a real app, you would validate credentials with your backend
-      // For this demo, we'll simulate a successful login after a brief delay
-
       // Simple validation
       if (!email) {
         setError("Please enter your email")
@@ -70,34 +44,45 @@ export function SignInForm({ onClose }: SignInFormProps) {
         return
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      // Call the server action to login
+      const result = await loginUser({ email, password })
 
-      // Set user as logged in
-      localStorage.setItem("isLoggedIn", "true")
+      if (result.success) {
+        toast({
+          title: "Login successful!",
+          description: "You have been logged in successfully.",
+          variant: "default",
+        })
 
-      // Trigger storage event for other components to detect the change
-      window.dispatchEvent(new Event("storage"))
+        // Close the modal
+        onClose()
 
-      // Close the modal
-      onClose()
-
-      // Redirect to search page
-      router.push("/search")
+        // Refresh the page to update the UI
+        router.refresh()
+      } else {
+        setError(result.message || "Login failed. Please check your credentials.")
+        toast({
+          title: "Login failed",
+          description: result.message || "Please check your credentials.",
+          variant: "destructive",
+        })
+      }
     } catch (err) {
-      console.error("Sign in error:", err)
-      setError("An error occurred during sign in. Please try again.")
+      console.error("Login error:", err)
+      setError("An error occurred during login. Please try again.")
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div ref={overlayRef} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div
-        ref={formRef}
-        className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-300"
-      >
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-300">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
@@ -115,7 +100,7 @@ export function SignInForm({ onClose }: SignInFormProps) {
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">{error}</div>
         )}
 
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -161,7 +146,7 @@ export function SignInForm({ onClose }: SignInFormProps) {
                 Remember me
               </Label>
             </div>
-            <Link href="#" className="text-sm text-gray-900 underline underline-offset-2">
+            <Link href="/forgot-password" className="text-sm text-gray-900 underline underline-offset-2">
               Forgot password?
             </Link>
           </div>

@@ -1,25 +1,23 @@
-import { cookies } from "next/headers"
+"use client"
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Instagram, Youtube, Search } from "lucide-react"
+import { Facebook, Instagram, Youtube } from "lucide-react"
 import { LoginButton } from "@/components/auth/login-button"
 import { SignUpButton } from "@/components/sign-up-button"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
+import { SearchInput } from "@/components/search-input"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
-export default async function Home() {
-  // Get user data from cookies
-  const cookieStore = await cookies()
-  const userDataCookie = cookieStore.get("user-data")
+interface HomeClientProps {
+  user: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+  } | null
+}
 
-  let user = null
-  if (userDataCookie) {
-    try {
-      user = JSON.parse(userDataCookie.value)
-    } catch (error) {
-      console.error("Error parsing user data:", error)
-    }
-  }
-
+export default function HomeClient({ user }: HomeClientProps) {
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -49,11 +47,7 @@ export default async function Home() {
               <SignUpButton />
             </>
           )}
-          <div className="flex gap-2 text-sm">
-            <button className="font-medium">ENG</button>
-            <span className="text-gray-300">|</span>
-            <button className="text-gray-500">UKR</button>
-          </div>
+          <LanguageSwitcher />
         </div>
       </header>
 
@@ -67,16 +61,15 @@ export default async function Home() {
             <p className="text-lg mb-8">Open your doors and hearts to pets in need of a home</p>
 
             <div className="flex gap-4 max-w-[500px] mx-auto">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Zip code or City"
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              </div>
+              <SearchInput />
             </div>
 
+            {user && (
+              <div className="mt-8 p-4 bg-white/90 rounded-lg shadow-sm">
+                <p className="text-lg font-medium">Welcome back, {user.firstName}!</p>
+                <p className="text-sm text-gray-600">Ready to find your perfect pet companion?</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

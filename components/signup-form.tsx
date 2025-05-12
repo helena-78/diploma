@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 import { registerUser } from "@/app/actions/auth"
 import { useToast } from "@/hooks/use-toast"
 
-export default function SignupForm() {
+export function SignupForm({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(1)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -436,7 +436,7 @@ export default function SignupForm() {
                     <SelectTrigger className={errors.birthDate ? "border-red-500" : ""}>
                       <SelectValue placeholder="Year" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                    <SelectContent>
                       {years.map((year) => (
                         <SelectItem key={year} value={year.toString()}>
                           {year}

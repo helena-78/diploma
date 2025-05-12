@@ -2,19 +2,18 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { SignupForm } from "@/components/signup-form"
+import { LoginForm } from "@/components/auth/login-form"
 
-export function SignUpButton() {
+export function LoginButton() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
       <Button size="lg" className="px-8" onClick={() => setIsOpen(true)}>
-        Sign Up
+        Sign In
       </Button>
 
-      {isOpen && <SignupForm onClose={() => setIsOpen(false)} />}
+      {isOpen && <LoginForm onClose={() => setIsOpen(false)} />}
     </>
   )
 }
-

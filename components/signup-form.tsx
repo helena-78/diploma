@@ -12,6 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { registerUser } from "@/app/actions/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SignupForm() {
   const [step, setStep] = useState(1)
@@ -21,7 +23,7 @@ export default function SignupForm() {
     lastName: "",
     email: "",
     password: "",
-    zipCode: "",
+    city: "",
     gender: "",
     birthMonth: "",
     birthDate: "",
@@ -38,6 +40,7 @@ export default function SignupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState("")
   const router = useRouter()
+  const { toast } = useToast()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -93,8 +96,8 @@ export default function SignupForm() {
       newErrors.password = "Password must be at least 8 characters"
     }
 
-    if (!formData.zipCode.trim()) {
-      newErrors.zipCode = "ZIP/Postal code is required"
+    if (!formData.city.trim()) {
+      newErrors.city = "City is required"
     }
 
     if (!formData.gender) {
@@ -158,18 +161,36 @@ export default function SignupForm() {
         try {
           // Show loading state
           setIsSubmitting(true)
+          setSubmissionError("")
 
-          // Simulate API call with a timeout
-          // In a real app, you would make an actual API request here
-          await new Promise((resolve) => setTimeout(resolve, 1500))
+          // Call the server action to register the user
+          const result = await registerUser(formData)
 
-          console.log("Form submitted:", formData)
+          if (result.success) {
+            toast({
+              title: "Registration successful!",
+              description: "Your account has been created.",
+              variant: "default",
+            })
 
-          // Redirect to user page after successful signup
-          router.push("/user/dashboard")
+            // Redirect to user page after successful signup
+            router.push("/")
+          } else {
+            setSubmissionError(result.message || "Registration failed. Please try again.")
+            toast({
+              title: "Registration failed",
+              description: result.message || "Please try again.",
+              variant: "destructive",
+            })
+          }
         } catch (error) {
           console.error("Signup error:", error)
           setSubmissionError("An error occurred during signup. Please try again.")
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          })
         } finally {
           setIsSubmitting(false)
         }
@@ -344,16 +365,16 @@ export default function SignupForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="zipCode">ZIP/ Postal Code</Label>
+                <Label htmlFor="city">City</Label>
                 <Input
-                  id="zipCode"
-                  name="zipCode"
-                  placeholder="Enter your ZIP code"
-                  value={formData.zipCode}
+                  id="city"
+                  name="city"
+                  placeholder="Enter your city"
+                  value={formData.city}
                   onChange={handleInputChange}
-                  className={errors.zipCode ? "border-red-500" : ""}
+                  className={errors.city ? "border-red-500" : ""}
                 />
-                {errors.zipCode && <p className="text-red-500 text-xs mt-1">{errors.zipCode}</p>}
+                {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
               </div>
 
               <div className="space-y-2">
@@ -415,7 +436,7 @@ export default function SignupForm() {
                     <SelectTrigger className={errors.birthDate ? "border-red-500" : ""}>
                       <SelectValue placeholder="Year" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       {years.map((year) => (
                         <SelectItem key={year} value={year.toString()}>
                           {year}

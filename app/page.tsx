@@ -1,8 +1,10 @@
 import { cookies } from "next/headers"
 import Link from "next/link"
+import Image from "next/image"
 import { Facebook, Instagram, Youtube, Search } from "lucide-react"
 import { LoginButton } from "@/components/auth/login-button"
 import { SignUpButton } from "@/components/sign-up-button"
+import { UserAccountNav } from "@/components/auth/user-account-nav"
 
 export default async function Home() {
   // Get user data from cookies
@@ -21,10 +23,14 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 font-semibold">P</span>
-          </div>
+      <Link href="/" className="flex items-center gap-2">
+          <Image 
+          src="/logo.svg" 
+          alt="Logo" 
+          width={32} 
+          height={32} 
+          className="w-8 h-8"
+        />
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
 
@@ -42,7 +48,7 @@ export default async function Home() {
 
         <div className="flex items-center gap-4">
           {user ? (
-            <UserAccountNavServer user={user} />
+            <UserAccountNav user={user} />
           ) : (
             <>
               <LoginButton />
@@ -77,6 +83,12 @@ export default async function Home() {
               </div>
             </div>
 
+            {user && (
+              <div className="mt-8 p-4 bg-white/90 rounded-lg shadow-sm">
+                <p className="text-lg font-medium">Welcome back, {user.firstName}!</p>
+                <p className="text-sm text-gray-600">Ready to find your perfect pet companion?</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -107,41 +119,6 @@ export default async function Home() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-// Server component for user account navigation
-function UserAccountNavServer({ user }: { user: any }) {
-  return (
-    <div className="flex items-center gap-2 text-gray-700">
-      <div className="flex items-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-5 w-5 text-gray-600"
-        >
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-        <span className="ml-2 text-gray-600">{user.firstName || "My Account"}</span>
-        <Link href="/profile" className="ml-2 text-sm text-blue-600 hover:underline">
-          Profile
-        </Link>
-        <Link href="/settings" className="ml-2 text-sm text-blue-600 hover:underline">
-          Settings
-        </Link>
-        <form action="/api/auth/logout" method="POST">
-          <button type="submit" className="ml-2 text-sm text-blue-600 hover:underline">
-            Sign out
-          </button>
-        </form>
-      </div>
     </div>
   )
 }

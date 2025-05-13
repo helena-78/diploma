@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 import { logoutUser } from "@/app/actions/auth"
 import { useToast } from "@/hooks/use-toast"
@@ -67,16 +68,6 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
     }
   }
 
-  const handleProfileClick = () => {
-    setIsDropdownOpen(false)
-    router.push("/profile")
-  }
-
-  const handleSettingsClick = () => {
-    setIsDropdownOpen(false)
-    router.push("/settings")
-  }
-
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -114,20 +105,22 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           role="menu"
           aria-orientation="vertical"
         >
-          <button
-            onClick={handleProfileClick}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          <Link
+            href="/profile"
+            className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
             role="menuitem"
+            onClick={() => setIsDropdownOpen(false)}
           >
             Profile
-          </button>
-          <button
-            onClick={handleSettingsClick}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          </Link>
+          <Link
+            href="/settings"
+            className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
             role="menuitem"
+            onClick={() => setIsDropdownOpen(false)}
           >
             Settings
-          </button>
+          </Link>
           <button
             className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
             onClick={handleLogout}

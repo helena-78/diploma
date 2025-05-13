@@ -1,20 +1,18 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { SignupForm } from "@/components/signup-form"
+import { useRouter } from "next/navigation"
 
 export function SignUpButton() {
-  const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
+
+  const handleClick = () => {
+    router.push("/signup")
+  }
 
   return (
-    <>
-      <Button size="lg" className="px-8" onClick={() => setIsOpen(true)}>
-        Sign Up
-      </Button>
-
-      {isOpen && <SignupForm onClose={() => setIsOpen(false)} />}
-    </>
+    <Button size="lg" className="px-8" onClick={handleClick}>
+      Sign Up
+    </Button>
   )
 }
-

@@ -1,8 +1,8 @@
-import { SignupForm } from "@/components/auth/signup-form"
+import { LoginForm } from "@/components/auth/login-form-page"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
-export default function SignupPage() {
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 font-serif">
       <div className="container mx-auto px-4 py-8">
@@ -11,7 +11,9 @@ export default function SignupPage() {
           Back to Home
         </Link>
 
-        <SignupForm />
+        <div className="max-w-md mx-auto">
+          <LoginForm />
+        </div>
       </div>
     </div>
   )

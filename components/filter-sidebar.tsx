@@ -48,98 +48,62 @@ export default function FilterSidebar({ onFiltersChange, initialFilters }: Filte
 
   const [filters, setFilters] = useState<FilterValues>(initialFilters || defaultFilters)
   const [activeFilterCount, setActiveFilterCount] = useState(0)
+  const [breedOptions, setBreedOptions] = useState<FilterOption[]>([{ label: "Any", value: "Any" }])
+  const [cityOptions, setCityOptions] = useState<FilterOption[]>([{ label: "Any", value: "Any" }])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const dogBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    { label: "Labrador", value: "Labrador" },
-    { label: "German Shepherd", value: "German Shepherd" },
-    { label: "Golden Retriever", value: "Golden Retriever" },
-    { label: "Bulldog", value: "Bulldog" },
-    { label: "Beagle", value: "Beagle" },
-    { label: "Poodle", value: "Poodle" },
-    { label: "Boxer", value: "Boxer" },
-    { label: "Siberian Husky", value: "Siberian Husky" },
-    { label: "Dachshund", value: "Dachshund" },
-  ]
-
-  const catBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    { label: "Maine Coon", value: "Maine Coon" },
-    { label: "Ragdoll", value: "Ragdoll" },
-    { label: "Siamese", value: "Siamese" },
-    { label: "British Shorthair", value: "British Shorthair" },
-    { label: "Bengal", value: "Bengal" },
-    { label: "Persian", value: "Persian" },
-  ]
-
-  const birdBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    { label: "Budgerigar", value: "Budgerigar" },
-    { label: "Cockatiel", value: "Cockatiel" },
-    { label: "African Grey Parrot", value: "African Grey Parrot" },
-    { label: "Canary", value: "Canary" },
-    { label: "Parakeet", value: "Parakeet" },
-  ]
-
-  const smallAndFurryBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    { label: "Hamster", value: "Hamster" },
-    { label: "Rat", value: "Rat" },
-    { label: "Rabbit", value: "Rabbit" },
-    { label: "Pig", value: "Pig" },
-    { label: "Chinchilla", value: "Chinchilla" },
-  ]
-
-  const reptileBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    { label: "Iguana", value: "Iguana" },
-    { label: "Chameleon", value: "Chameleon" },
-    { label: "Tortoise", value: "Tortoise" },
-  ]
-
-  const otherBreeds: FilterOption[] = [{ label: "Any", value: "Any" }]
-
-  const anyBreeds: FilterOption[] = [
-    { label: "Any", value: "Any" },
-    ...dogBreeds.slice(1),
-    ...catBreeds.slice(1),
-    ...birdBreeds.slice(1),
-    ...smallAndFurryBreeds.slice(1),
-    ...reptileBreeds.slice(1),
-  ]
-  // State to track current breed options
-  const [breedOptions, setBreedOptions] = useState<FilterOption[]>(anyBreeds)
-
+  // Fetch breeds when species changes
   useEffect(() => {
-    let newBreedOptions: FilterOption[]
+    async function fetchBreeds() {
+      try {
+        const response = await fetch(`/api/breeds?species=${filters.species}`)
+        const data = await response.json()
 
-    switch (filters.species) {
-      case "Dog":
-        newBreedOptions = dogBreeds
-        break
-      case "Cat":
-        newBreedOptions = catBreeds
-        break
-      case "Bird":
-        newBreedOptions = birdBreeds
-        break
-      case "Small & Furry":
-        newBreedOptions = smallAndFurryBreeds
-        break
-      case "Reptile":
-        newBreedOptions = reptileBreeds
-        break
-      default:
-        newBreedOptions = anyBreeds
+        if (data.breeds) {
+          const options = [
+            { label: "Any", value: "Any" },
+            ...data.breeds.map((breed: { breed: string }) => ({
+              label: breed.breed,
+              value: breed.breed,
+            })),
+          ]
+          setBreedOptions(options)
+        }
+      } catch (error) {
+        console.error("Error fetching breeds:", error)
+      }
     }
 
-    setBreedOptions(newBreedOptions)
-
-    // Reset breed to "Any" if current selection isn't in the new options
-    if (!newBreedOptions.some((breed) => breed.value === filters.breed)) {
-      setFilters((prev) => ({ ...prev, breed: "Any" }))
-    }
+    fetchBreeds()
   }, [filters.species])
+
+  // Fetch cities on component mount
+  useEffect(() => {
+    async function fetchCities() {
+      try {
+        setIsLoading(true)
+        const response = await fetch("/api/cities")
+        const data = await response.json()
+
+        if (data.cities) {
+          const options = [
+            { label: "Any", value: "Any" },
+            ...data.cities.map((city: { city: string }) => ({
+              label: city.city,
+              value: city.city,
+            })),
+          ]
+          setCityOptions(options)
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCities()
+  }, [])
 
   // Count active filters
   useEffect(() => {
@@ -169,18 +133,7 @@ export default function FilterSidebar({ onFiltersChange, initialFilters }: Filte
     },
     {
       name: "CITY",
-      options: [
-        { label: "Any", value: "Any" },
-        { label: "New York, NY", value: "New York, NY" },
-        { label: "Los Angeles, CA", value: "Los Angeles, CA" },
-        { label: "Chicago, IL", value: "Chicago, IL" },
-        { label: "Houston, TX", value: "Houston, TX" },
-        { label: "Phoenix, AZ", value: "Phoenix, AZ" },
-        { label: "Philadelphia, PA", value: "Philadelphia, PA" },
-        { label: "San Antonio, TX", value: "San Antonio, TX" },
-        { label: "San Diego, CA", value: "San Diego, CA" },
-        { label: "Dallas, TX", value: "Dallas, TX" },
-      ],
+      options: cityOptions,
     },
     {
       name: "AGE",
@@ -249,14 +202,41 @@ export default function FilterSidebar({ onFiltersChange, initialFilters }: Filte
   ]
 
   const handleFilterChange = (category: string, value: string) => {
-    setFilters({
-      ...filters,
-      [category]: value,
-    })
+    // If changing species, reset breed to "Any"
+    if (category === "species") {
+      setFilters({
+        ...filters,
+        [category]: value,
+        breed: "Any", // Reset breed when species changes
+      })
+    } else {
+      setFilters({
+        ...filters,
+        [category]: value,
+      })
+    }
   }
 
   const clearAllFilters = () => {
     setFilters(defaultFilters)
+  }
+
+  if (isLoading) {
+    return (
+      <aside className="w-64 p-4 bg-white border-r border-gray-200">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded mb-4"></div>
+          <div className="space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i}>
+                <div className="h-4 bg-gray-200 rounded mb-2 w-20 mx-auto"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    )
   }
 
   return (

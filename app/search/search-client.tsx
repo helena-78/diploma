@@ -14,213 +14,23 @@ import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-// Extended pet data with all filterable properties
-const petsData = [
-  {
-    id: 1,
-    name: "Max",
-    breed: "Labrador",
-    species: "Dog",
-    age: "2 years",
-    ageCategory: "Young",
-    gender: "Male",
-    size: "Large",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "New York, NY",
-    city: "New York, NY",
-    daysOnPlatform: "15",
-    adoptionType: "Permanent",
-    imageUrl: "/labrador.png",
-  },
-  {
-    id: 2,
-    name: "Bella",
-    breed: "German Shepherd",
-    species: "Dog",
-    age: "1 year",
-    ageCategory: "Young",
-    gender: "Female",
-    size: "Large",
-    coatLength: "Medium",
-    goodWithKids: "Yes",
-    location: "Los Angeles, CA",
-    city: "Los Angeles, CA",
-    daysOnPlatform: "7",
-    adoptionType: "Permanent",
-    imageUrl: "/majestic-german-shepherd.png",
-  },
-  {
-    id: 3,
-    name: "Charlie",
-    breed: "Golden Retriever",
-    species: "Dog",
-    age: "3 years",
-    ageCategory: "Adult",
-    gender: "Male",
-    size: "Large",
-    coatLength: "Medium",
-    goodWithKids: "Yes",
-    location: "Chicago, IL",
-    city: "Chicago, IL",
-    daysOnPlatform: "30",
-    adoptionType: "Permanent",
-    imageUrl: "/golden-retriever.png",
-  },
-  {
-    id: 4,
-    name: "Luna",
-    breed: "Beagle",
-    species: "Dog",
-    age: "2 years",
-    ageCategory: "Young",
-    gender: "Female",
-    size: "Medium",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "Houston, TX",
-    city: "Houston, TX",
-    daysOnPlatform: "45",
-    adoptionType: "Permanent",
-    imageUrl: "/beagle-portrait.png",
-  },
-  {
-    id: 5,
-    name: "Cooper",
-    breed: "Bulldog",
-    species: "Dog",
-    age: "4 years",
-    ageCategory: "Adult",
-    gender: "Male",
-    size: "Medium",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "Phoenix, AZ",
-    city: "Phoenix, AZ",
-    daysOnPlatform: "60",
-    adoptionType: "Permanent",
-    imageUrl: "/happy-bulldog.png",
-  },
-  {
-    id: 6,
-    name: "Lucy",
-    breed: "Poodle",
-    species: "Dog",
-    age: "1 year",
-    ageCategory: "Young",
-    gender: "Female",
-    size: "Small",
-    coatLength: "Long",
-    goodWithKids: "Yes",
-    location: "Philadelphia, PA",
-    city: "Philadelphia, PA",
-    daysOnPlatform: "5",
-    adoptionType: "Permanent",
-    imageUrl: "/fluffy-white-poodle.png",
-  },
-  {
-    id: 7,
-    name: "Bailey",
-    breed: "Siberian Husky",
-    species: "Dog",
-    age: "3 years",
-    ageCategory: "Adult",
-    gender: "Female",
-    size: "Large",
-    coatLength: "Medium",
-    goodWithKids: "Yes",
-    location: "San Antonio, TX",
-    city: "San Antonio, TX",
-    daysOnPlatform: "20",
-    adoptionType: "Temporary",
-    imageUrl: "/siberian-husky-portrait.png",
-  },
-  {
-    id: 8,
-    name: "Rocky",
-    breed: "Boxer",
-    species: "Dog",
-    age: "5 years",
-    ageCategory: "Adult",
-    gender: "Male",
-    size: "Large",
-    coatLength: "Short",
-    goodWithKids: "No",
-    location: "San Diego, CA",
-    city: "San Diego, CA",
-    daysOnPlatform: "100",
-    adoptionType: "Permanent",
-    imageUrl: "/boxer-dog.png",
-  },
-  {
-    id: 9,
-    name: "Daisy",
-    breed: "Dachshund",
-    species: "Dog",
-    age: "2 years",
-    ageCategory: "Young",
-    gender: "Female",
-    size: "Small",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "Dallas, TX",
-    city: "Dallas, TX",
-    daysOnPlatform: "12",
-    adoptionType: "Permanent",
-    imageUrl: "/dachshund-in-garden.png",
-  },
-  {
-    id: 10,
-    name: "Whiskers",
-    breed: "Siamese",
-    species: "Cat",
-    age: "3 years",
-    ageCategory: "Adult",
-    gender: "Male",
-    size: "Medium",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "New York, NY",
-    city: "New York, NY",
-    daysOnPlatform: "25",
-    adoptionType: "Permanent",
-    imageUrl: "/siamese-cat.png",
-  },
-  {
-    id: 11,
-    name: "Mittens",
-    breed: "Maine Coon",
-    species: "Cat",
-    age: "4 years",
-    ageCategory: "Adult",
-    gender: "Female",
-    size: "Large",
-    coatLength: "Long",
-    goodWithKids: "Yes",
-    location: "Chicago, IL",
-    city: "Chicago, IL",
-    daysOnPlatform: "40",
-    adoptionType: "Permanent",
-    imageUrl: "/maine-coon-cat.png",
-  },
-  {
-    id: 12,
-    name: "Tweety",
-    breed: "Budgerigar",
-    species: "Bird",
-    age: "1 year",
-    ageCategory: "Young",
-    gender: "Male",
-    size: "Small",
-    coatLength: "Short",
-    goodWithKids: "Yes",
-    location: "Los Angeles, CA",
-    city: "Los Angeles, CA",
-    daysOnPlatform: "10",
-    adoptionType: "Permanent",
-    imageUrl: "/budgerigar-bird.png",
-  },
-]
+interface Pet {
+  id: number
+  name: string
+  breed: string
+  species: string
+  age: string
+  ageCategory: string
+  gender: string
+  size: string
+  coatLength: string
+  goodWithKids: string
+  location: string
+  city: string
+  daysOnPlatform: string
+  adoptionType: string
+  imageUrl: string
+}
 
 interface SearchPageClientProps {
   user: {
@@ -247,8 +57,9 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
     adoptionType: "Any",
     daysOnPlatform: "Any",
   })
-  const [filteredPets, setFilteredPets] = useState(petsData)
+  const [pets, setPets] = useState<Pet[]>([])
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
@@ -256,91 +67,51 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
     if (storedFavorites) {
       setFavorites(JSON.parse(storedFavorites))
     }
-    setIsLoading(false)
   }, [])
 
-  // Filter pets based on search query and active filters
+  // Fetch pets from the API with filters
   useEffect(() => {
-    let result = petsData
+    async function fetchPets() {
+      try {
+        setIsLoading(true)
+        setError(null)
 
-    // Apply search query filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (pet) =>
-          pet.name.toLowerCase().includes(query) ||
-          pet.breed.toLowerCase().includes(query) ||
-          pet.species.toLowerCase().includes(query),
-      )
+        // Build query string with all filters
+        const params = new URLSearchParams()
+
+        Object.entries(activeFilters).forEach(([key, value]) => {
+          if (value !== "Any") {
+            params.append(key, value)
+          }
+        })
+
+        if (searchQuery) {
+          params.append("search", searchQuery)
+        }
+
+        const response = await fetch(`/api/pets?${params.toString()}`)
+
+        if (!response.ok) {
+          throw new Error(`Error fetching pets: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setPets(data.pets || [])
+      } catch (error) {
+        console.error("Error fetching pets:", error)
+        setError("Failed to load pets. Please try again later.")
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    // Apply all other filters
-    result = result.filter((pet) => {
-      // Species filter
-      if (activeFilters.species !== "Any" && pet.species !== activeFilters.species) {
-        return false
-      }
+    // Debounce the search to avoid too many requests
+    const timeoutId = setTimeout(() => {
+      fetchPets()
+    }, 300)
 
-      // Breed filter
-      if (activeFilters.breed !== "Any" && pet.breed !== activeFilters.breed) {
-        return false
-      }
-
-      // City filter
-      if (activeFilters.city !== "Any" && pet.city !== activeFilters.city) {
-        return false
-      }
-
-      // Age filter
-      if (activeFilters.age !== "Any" && pet.ageCategory !== activeFilters.age) {
-        return false
-      }
-
-      // Size filter
-      if (activeFilters.size !== "Any" && pet.size !== activeFilters.size) {
-        return false
-      }
-
-      // Gender filter
-      if (activeFilters.gender !== "Any" && pet.gender !== activeFilters.gender) {
-        return false
-      }
-
-      // Coat length filter
-      if (activeFilters.coatLength !== "Any" && pet.coatLength !== activeFilters.coatLength) {
-        return false
-      }
-
-      // Good with kids filter
-      if (activeFilters.goodWithKids !== "Any" && pet.goodWithKids !== activeFilters.goodWithKids) {
-        return false
-      }
-
-      // Adoption type filter
-      if (activeFilters.adoptionType !== "Any" && pet.adoptionType !== activeFilters.adoptionType) {
-        return false
-      }
-
-      // Days on platform filter
-      if (activeFilters.daysOnPlatform !== "Any") {
-        const days = Number.parseInt(pet.daysOnPlatform)
-
-        if (activeFilters.daysOnPlatform === "1-7" && (days < 1 || days > 7)) {
-          return false
-        } else if (activeFilters.daysOnPlatform === "8-30" && (days < 8 || days > 30)) {
-          return false
-        } else if (activeFilters.daysOnPlatform === "31-90" && (days < 31 || days > 90)) {
-          return false
-        } else if (activeFilters.daysOnPlatform === "91+" && days < 91) {
-          return false
-        }
-      }
-
-      return true
-    })
-
-    setFilteredPets(result)
-  }, [searchQuery, activeFilters])
+    return () => clearTimeout(timeoutId)
+  }, [activeFilters, searchQuery])
 
   const handleFiltersChange = (filters: FilterValues) => {
     setActiveFilters(filters)
@@ -350,12 +121,20 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
     setSearchQuery(e.target.value)
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    )
+  const clearAllFilters = () => {
+    setActiveFilters({
+      species: "Any",
+      breed: "Any",
+      age: "Any",
+      size: "Any",
+      gender: "Any",
+      city: "Any",
+      coatLength: "Any",
+      goodWithKids: "Any",
+      adoptionType: "Any",
+      daysOnPlatform: "Any",
+    })
+    setSearchQuery("")
   }
 
   return (
@@ -433,10 +212,45 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
         <main className="flex-1 p-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Pet Listings</h1>
-            <p className="text-gray-500">{filteredPets.length} pets found</p>
+            <p className="text-gray-500">{pets.length} pets found</p>
           </div>
 
-          {filteredPets.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-red-500 mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">Error</h3>
+              <p className="text-gray-500 mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          ) : pets.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <svg
@@ -456,29 +270,11 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
               </div>
               <h3 className="text-xl font-medium text-gray-900 mb-2">No pets found</h3>
               <p className="text-gray-500 mb-6">Try adjusting your filters or search query</p>
-              <Button
-                onClick={() => {
-                  setActiveFilters({
-                    species: "Any",
-                    breed: "Any",
-                    age: "Any",
-                    size: "Any",
-                    gender: "Any",
-                    city: "Any",
-                    coatLength: "Any",
-                    goodWithKids: "Any",
-                    adoptionType: "Any",
-                    daysOnPlatform: "Any",
-                  })
-                  setSearchQuery("")
-                }}
-              >
-                Clear all filters
-              </Button>
+              <Button onClick={clearAllFilters}>Clear all filters</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPets.map((pet) => (
+              {pets.map((pet) => (
                 <Link key={pet.id} href={`/pets/${pet.id}`}>
                   <PetCard
                     key={pet.id}

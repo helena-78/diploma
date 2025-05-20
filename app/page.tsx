@@ -55,6 +55,7 @@ export default async function Home() {
               <SignUpButton />
             </>
           )}
+
           <div className="flex gap-2 text-sm">
             <button className="font-medium">ENG</button>
             <span className="text-gray-300">|</span>
@@ -83,12 +84,6 @@ export default async function Home() {
               </div>
             </div>
 
-            {user && (
-              <div className="mt-8 p-4 bg-white/90 rounded-lg shadow-sm">
-                <p className="text-lg font-medium">Welcome back, {user.firstName}!</p>
-                <p className="text-sm text-gray-600">Ready to find your perfect pet companion?</p>
-              </div>
-            )}
           </div>
         </div>
       </main>

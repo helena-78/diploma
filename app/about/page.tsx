@@ -1,23 +1,38 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { SignInButton } from "@/components/sign-in-button"
 import { SignUpButton } from "@/components/sign-up-button"
-import { Facebook, Instagram, Youtube} from "lucide-react";
+import { Facebook, Instagram, Youtube } from "lucide-react"
+import { LoginButton } from "@/components/auth/login-button"
+import { UserAccountNav } from "@/components/auth/user-account-nav"
+import { cookies } from "next/headers"
+import jwt from "jsonwebtoken"
 
+export default async function AboutPage() {
+  // Get user from cookie
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")
 
-export default function AboutPage() {
+  let user = null
+  if (token) {
+    try {
+      const verified = jwt.verify(token.value, process.env.JWT_SECRET || "your-secret-key") as {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+      }
+      user = verified
+    } catch (error) {
+      console.error("Error verifying token:", error)
+    }
+  }
+
   return (
     <div className="bg-white font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image 
-          src="/logo.svg" 
-          alt="Logo" 
-          width={32} 
-          height={32} 
-          className="w-8 h-8"
-        />
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} className="w-8 h-8" />
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
 
@@ -33,15 +48,7 @@ export default function AboutPage() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
-          <SignInButton />
-          <SignUpButton />
-          <div className="flex gap-2 text-sm">
-            <button className="font-medium">ENG</button>
-            <span className="text-gray-300">|</span>
-            <button className="text-gray-500">UKR</button>
-          </div>
-        </div>
+      
       </header>
       {/* Hero Section */}
       <section className="relative bg-gray-100">
@@ -245,7 +252,7 @@ export default function AboutPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+                    d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296a3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
                   />
                 </svg>
               </div>
@@ -291,7 +298,7 @@ export default function AboutPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"
+                    d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352a5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"
                   />
                 </svg>
               </div>

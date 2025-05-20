@@ -1,7 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export type FilterValues = {
+  species: string
+  breed: string
+  age: string
+  size: string
+  gender: string
+  city: string
+  coatLength: string
+  goodWithKids: string
+  adoptionType: string
+  daysOnPlatform: string
+}
 
 type FilterOption = {
   label: string
@@ -13,8 +27,13 @@ type FilterCategory = {
   options: FilterOption[]
 }
 
-export default function FilterSidebar() {
-  const [filters, setFilters] = useState({
+interface FilterSidebarProps {
+  onFiltersChange: (filters: FilterValues) => void
+  initialFilters?: FilterValues
+}
+
+export default function FilterSidebar({ onFiltersChange, initialFilters }: FilterSidebarProps) {
+  const defaultFilters = {
     species: "Any",
     breed: "Any",
     age: "Any",
@@ -25,7 +44,11 @@ export default function FilterSidebar() {
     goodWithKids: "Any",
     adoptionType: "Any",
     daysOnPlatform: "Any",
-  })
+  }
+
+  const [filters, setFilters] = useState<FilterValues>(initialFilters || defaultFilters)
+  const [activeFilterCount, setActiveFilterCount] = useState(0)
+
   const dogBreeds: FilterOption[] = [
     { label: "Any", value: "Any" },
     { label: "Labrador", value: "Labrador" },
@@ -117,6 +140,15 @@ export default function FilterSidebar() {
       setFilters((prev) => ({ ...prev, breed: "Any" }))
     }
   }, [filters.species])
+
+  // Count active filters
+  useEffect(() => {
+    const count = Object.entries(filters).filter(([_, value]) => value !== "Any").length
+    setActiveFilterCount(count)
+
+    // Notify parent component about filter changes
+    onFiltersChange(filters)
+  }, [filters, onFiltersChange])
 
   const filterCategories: FilterCategory[] = [
     {
@@ -223,8 +255,49 @@ export default function FilterSidebar() {
     })
   }
 
+  const clearAllFilters = () => {
+    setFilters(defaultFilters)
+  }
+
   return (
     <aside className="w-64 p-4 bg-white border-r border-gray-200">
+      <div className="flex justify-between items-center mb-4">
+        {activeFilterCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
+            Clear all
+          </Button>
+        )}
+      </div>
+
+      {activeFilterCount > 0 && (
+        <div className="mb-4">
+          <div className="text-sm text-gray-500 mb-2">Active filters: {activeFilterCount}</div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(filters).map(([key, value]) => {
+              if (value !== "Any") {
+                return (
+                  <div key={key} className="bg-gray-100 text-xs rounded-full px-3 py-1 flex items-center">
+                    {value}
+                    <button
+                      onClick={() => handleFilterChange(key, "Any")}
+                      className="ml-1 text-gray-500 hover:text-gray-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )
+              }
+              return null
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-6">
         {filterCategories.map((category) => (
           <div key={category.name} className="space-y-2">

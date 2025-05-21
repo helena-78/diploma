@@ -42,7 +42,7 @@ interface SearchPageClientProps {
 }
 
 export default function SearchPageClient({ user }: SearchPageClientProps) {
-  const [favorites, setFavorites] = useState<number[]>([])
+  const [favorites, setFavorites] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilters, setActiveFilters] = useState<FilterValues>({
@@ -140,14 +140,8 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Image 
-            src="/logo.svg" 
-            alt="Logo" 
-            width={32} 
-            height={32} 
-            className="w-8 h-8"
-            />
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} className="w-8 h-8" />
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
@@ -213,6 +207,33 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Pet Listings</h1>
             <p className="text-gray-500">{pets.length} pets found</p>
+            <div className="w-full mb-6">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search pets by name or breed..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-10 pr-4 py-2 w-full"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
+            </div>
+            <div className="flex md:hidden justify-between items-center mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                {showMobileFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+              {Object.values(activeFilters).some((value) => value !== "Any") && (
+                <Button variant="ghost" onClick={clearAllFilters} size="sm">
+                  Clear filters
+                </Button>
+              )}
+            </div>
           </div>
 
           {isLoading ? (
@@ -284,7 +305,7 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
                     gender={pet.gender}
                     location={pet.location}
                     imageUrl={pet.imageUrl}
-                    isFavorite={favorites.includes(pet.id)}
+                    isFavorite={favorites.includes(pet.id.toString())}
                   />
                 </Link>
               ))}

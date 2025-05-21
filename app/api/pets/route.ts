@@ -5,17 +5,17 @@ export async function GET(request: NextRequest) {
   try {
     // Get filter parameters from the URL
     const searchParams = request.nextUrl.searchParams
-    const species = searchParams.get("species")
-    const breed = searchParams.get("breed")
-    const age = searchParams.get("age")
-    const size = searchParams.get("size")
-    const gender = searchParams.get("gender")
-    const city = searchParams.get("city")
-    const coatLength = searchParams.get("coatLength")
-    const goodWithKids = searchParams.get("goodWithKids")
-    const adoptionType = searchParams.get("adoptionType")
-    const daysOnPlatform = searchParams.get("daysOnPlatform")
-    const searchQuery = searchParams.get("search")
+    const species = searchParams.get("species") || "Any"
+    const breed = searchParams.get("breed") || "Any"
+    const age = searchParams.get("age") || "Any"
+    const size = searchParams.get("size") || "Any"
+    const gender = searchParams.get("gender") || "Any"
+    const city = searchParams.get("city") || "Any"
+    const coatLength = searchParams.get("coatLength") || "Any"
+    const goodWithKids = searchParams.get("goodWithKids") || "Any"
+    const adoptionType = searchParams.get("adoptionType") || "Any"
+    const daysOnPlatform = searchParams.get("daysOnPlatform") || "Any"
+    const searchQuery = searchParams.get("search") || ""
 
     // Build the SQL query with filters
     let sql = `

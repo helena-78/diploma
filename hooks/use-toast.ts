@@ -3,16 +3,17 @@
 // Inspired by react-hot-toast library
 import * as React from "react"
 
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
+const TOAST_LIMIT = 1
+const TOAST_REMOVE_DELAY = 1000000
 
-const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 5000
-
-type ToasterToast = ToastProps & {
+type ToasterToast = {
   id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
+  title: string
+  description?: string
+  variant?: "default" | "destructive" | "success"
+  duration?: number
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -25,7 +26,7 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  count = (count + 1) % Number.MAX_VALUE
+  count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
 
@@ -42,11 +43,11 @@ type Action =
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: string
+      toastId?: ToasterToast["id"]
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: string
+      toastId?: ToasterToast["id"]
     }
 
 interface State {
@@ -55,7 +56,23 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-const reducer = (state: State, action: Action): State => {
+const addToRemoveQueue = (toastId: string) => {
+  if (toastTimeouts.has(toastId)) {
+    return
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId)
+    dispatch({
+      type: "REMOVE_TOAST",
+      toastId: toastId,
+    })
+  }, TOAST_REMOVE_DELAY)
+
+  toastTimeouts.set(toastId, timeout)
+}
+
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
       return {
@@ -119,35 +136,97 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+type ToastVariant = "default" | "destructive" | "success"
 
-function toast({ ...props }: Toast) {
-  const id = genId()
+interface ToastProps {
+  title: string
+  description?: string
+  variant?: ToastVariant
+  duration?: number
+}
 
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+interface Toast extends ToastProps {
+  id: string
+  visible: boolean
+}
 
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
+// Simple toast implementation
+export function toast(props: ToastProps) {
+  const id = Math.random().toString(36).substring(2, 9)
+  const toast: Toast = {
+    id,
+    visible: true,
+    variant: "default",
+    duration: 3000,
+    ...props,
+  }
+
+  // Add toast to DOM
+  const toastContainer = document.getElementById("toast-container")
+  if (!toastContainer) {
+    const container = document.createElement("div")
+    container.id = "toast-container"
+    container.className = "fixed top-4 right-4 z-50 flex flex-col gap-2"
+    document.body.appendChild(container)
+  }
+
+  const toastElement = document.createElement("div")
+  toastElement.id = `toast-${id}`
+  toastElement.className = `bg-white border p-4 rounded-lg shadow-lg transition-all transform translate-x-0 max-w-sm ${
+    toast.variant === "destructive"
+      ? "border-red-500"
+      : toast.variant === "success"
+        ? "border-green-500"
+        : "border-gray-200"
+  }`
+
+  toastElement.innerHTML = `
+    <div class="flex justify-between items-start">
+      <div>
+        <h3 class="font-medium ${
+          toast.variant === "destructive"
+            ? "text-red-700"
+            : toast.variant === "success"
+              ? "text-green-700"
+              : "text-gray-900"
+        }">${toast.title}</h3>
+        ${toast.description ? `<p class="text-sm text-gray-500">${toast.description}</p>` : ""}
+      </div>
+      <button class="text-gray-400 hover:text-gray-500" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  `
+
+  const container = document.getElementById("toast-container")
+  container?.appendChild(toastElement)
+
+  // Add animation
+  setTimeout(() => {
+    toastElement.classList.add("translate-x-0", "opacity-100")
+  }, 10)
+
+  // Add close button functionality
+  const closeButton = toastElement.querySelector("button")
+  closeButton?.addEventListener("click", () => {
+    toastElement.classList.add("translate-x-full", "opacity-0")
+    setTimeout(() => {
+      toastElement.remove()
+    }, 300)
   })
 
-  return {
-    id: id,
-    dismiss,
-    update,
-  }
+  // Auto-dismiss
+  setTimeout(() => {
+    toastElement.classList.add("translate-x-full", "opacity-0")
+    setTimeout(() => {
+      toastElement.remove()
+    }, 300)
+  }, toast.duration)
+
+  return id
 }
 
 function useToast() {
@@ -170,20 +249,4 @@ function useToast() {
   }
 }
 
-function addToRemoveQueue(toastId: string) {
-  if (toastTimeouts.has(toastId)) {
-    return
-  }
-
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId)
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId,
-    })
-  }, TOAST_REMOVE_DELAY)
-
-  toastTimeouts.set(toastId, timeout)
-}
-
-export { useToast, toast }
+export { useToast }

@@ -12,6 +12,7 @@ import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CloudinaryImage from "@/components/cloudinary-image"
+import { useToast } from "@/hooks/use-toast"
 
 interface PetDetailsClientProps {
   pet: {
@@ -43,12 +44,14 @@ interface PetDetailsClientProps {
 export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
   const [favorites, setFavorites] = useState<string[]>([])
   const [isInquirySubmitted, setIsInquirySubmitted] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [inquiryForm, setInquiryForm] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   })
+  const { toast } = useToast()
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
@@ -60,17 +63,65 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
 
   const isFavorite = favorites.includes(pet.id)
 
-  const toggleFavorite = () => {
-    let newFavorites: string[]
-
-    if (isFavorite) {
-      newFavorites = favorites.filter((id) => id !== pet.id)
-    } else {
-      newFavorites = [...favorites, pet.id]
+  const toggleFavorite = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save pets to your favorites",
+        variant: "destructive",
+      })
+      return
     }
 
-    setFavorites(newFavorites)
-    localStorage.setItem("petFavorites", JSON.stringify(newFavorites))
+    setIsSaving(true)
+
+    try {
+      let newFavorites: string[]
+
+      if (isFavorite) {
+        // Remove from favorites
+        const response = await fetch(`/api/favorites/${pet.id}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to remove from favorites")
+        }
+
+        newFavorites = favorites.filter((id) => id !== pet.id)
+        toast({
+          title: "Removed from favorites",
+          description: `${pet.name} has been removed from your favorites`,
+        })
+      } else {
+        // Add to favorites
+        const response = await fetch(`/api/favorites/${pet.id}`, {
+          method: "POST",
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to add to favorites")
+        }
+
+        newFavorites = [...favorites, pet.id]
+        toast({
+          title: "Added to favorites",
+          description: `${pet.name} has been added to your favorites`,
+        })
+      }
+
+      setFavorites(newFavorites)
+      localStorage.setItem("petFavorites", JSON.stringify(newFavorites))
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+      toast({
+        title: "Error",
+        description: "There was a problem updating your favorites",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleInquiryChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -238,7 +289,8 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
                 </div>
                 <button
                   onClick={toggleFavorite}
-                  className="p-2 rounded-full hover:bg-gray-100"
+                  disabled={isSaving}
+                  className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
                   aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 >
                   <Heart className={`w-6 h-6 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />

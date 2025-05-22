@@ -30,6 +30,7 @@ export default async function PetDetailsPage({
         user = JSON.parse(userDataCookie.value)
       } catch (error) {
         console.error("Error parsing user data:", error)
+        // Continue with user as null instead of throwing an error
       }
     }
 

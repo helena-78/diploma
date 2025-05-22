@@ -2,6 +2,7 @@
 
 import type React from "react"
 import Image from "next/image"
+import { useToast } from "@/hooks/use-toast"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -42,6 +43,7 @@ interface SearchPageClientProps {
 }
 
 export default function SearchPageClient({ user }: SearchPageClientProps) {
+  const { toast } = useToast()
   const [favorites, setFavorites] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -63,11 +65,28 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("petFavorites")
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites))
+    if (user) {
+      // If user is logged in, load their favorites from a user-specific key
+      const storedFavorites = localStorage.getItem(`petFavorites-${user.id}`)
+      if (storedFavorites) {
+        try {
+          setFavorites(JSON.parse(storedFavorites))
+        } catch (error) {
+          console.error("Error parsing favorites:", error)
+          // Reset favorites if there's an error
+          localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify([]))
+          setFavorites([])
+        }
+      } else {
+        // Initialize empty favorites for this user if none exist
+        localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify([]))
+        setFavorites([])
+      }
+    } else {
+      // If no user is logged in, clear favorites from state
+      setFavorites([])
     }
-  }, [])
+  }, [user])
 
   // Fetch pets from the API with filters
   useEffect(() => {
@@ -135,6 +154,56 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
       daysOnPlatform: "Any",
     })
     setSearchQuery("")
+  }
+
+  const toggleFavorite = async (petId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save pets to your favorites",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      let newFavorites: string[]
+
+      if (favorites.includes(petId)) {
+        // Remove from favorites
+        const response = await fetch(`/api/favorites/${petId}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to remove from favorites")
+        }
+
+        newFavorites = favorites.filter((id) => id !== petId)
+      } else {
+        // Add to favorites
+        const response = await fetch(`/api/favorites/${petId}`, {
+          method: "POST",
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to add to favorites")
+        }
+
+        newFavorites = [...favorites, petId]
+      }
+
+      setFavorites(newFavorites)
+      // Use user-specific key for localStorage
+      localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify(newFavorites))
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+      toast({
+        title: "Error",
+        description: "There was a problem updating your favorites",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -285,7 +354,7 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={1}
-                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
               </div>
@@ -299,6 +368,7 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
                 <Link key={pet.id} href={`/pets/${pet.id}`}>
                   <PetCard
                     key={pet.id}
+                    petId={pet.id.toString()}
                     name={pet.name}
                     breed={pet.breed}
                     age={pet.age}
@@ -306,6 +376,7 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
                     location={pet.location}
                     imageUrl={pet.imageUrl}
                     isFavorite={favorites.includes(pet.id.toString())}
+                    onFavoriteToggle={() => toggleFavorite(pet.id.toString())}
                   />
                 </Link>
               ))}

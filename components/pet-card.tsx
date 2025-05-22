@@ -13,6 +13,7 @@ interface PetCardProps {
   imageUrl: string
   isFavorite: boolean
   onFavoriteToggle?: () => void
+  petId?: string // Add petId prop
 }
 
 export default function PetCard({
@@ -24,6 +25,7 @@ export default function PetCard({
   imageUrl,
   isFavorite,
   onFavoriteToggle,
+  petId,
 }: PetCardProps) {
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -48,6 +50,7 @@ export default function PetCard({
           onClick={handleFavoriteClick}
           className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          data-pet-id={petId} // Add data attribute for pet ID
         >
           <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
         </button>

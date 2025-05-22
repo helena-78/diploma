@@ -18,6 +18,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { petId
     try {
       user = JSON.parse(userDataCookie.value)
     } catch (error) {
+      console.error("Error parsing user data:", error)
       return NextResponse.json({ error: "Invalid user data" }, { status: 401 })
     }
 
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest, { params }: { params: { petId: 
     try {
       user = JSON.parse(userDataCookie.value)
     } catch (error) {
+      console.error("Error parsing user data:", error)
       return NextResponse.json({ error: "Invalid user data" }, { status: 401 })
     }
 

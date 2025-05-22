@@ -14,6 +14,8 @@ export default async function FavoritesPage() {
       user = JSON.parse(userDataCookie.value)
     } catch (error) {
       console.error("Error parsing user data:", error)
+      // If we can't parse the user data, redirect to login
+      redirect("/login")
     }
   }
 

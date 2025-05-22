@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CloudinaryImage from "@/components/cloudinary-image"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 interface PetDetailsClientProps {
   pet: {
@@ -52,14 +53,47 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
     message: "",
   })
   const { toast } = useToast()
+  const router = useRouter()
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("petFavorites")
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites))
+    if (user) {
+      // If user is logged in, load their favorites from a user-specific key
+      const storedFavorites = localStorage.getItem(`petFavorites-${user.id}`)
+      if (storedFavorites) {
+        try {
+          setFavorites(JSON.parse(storedFavorites))
+        } catch (error) {
+          console.error("Error parsing favorites:", error)
+          // Reset favorites if there's an error
+          localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify([]))
+          setFavorites([])
+        }
+      } else {
+        // Initialize empty favorites for this user if none exist
+        localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify([]))
+        setFavorites([])
+      }
+    } else {
+      // If no user is logged in, clear favorites from state
+      setFavorites([])
     }
-  }, [])
+  }, [user])
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user-data" && e.newValue === null) {
+        // User has signed out, refresh the page to update the UI
+        router.refresh()
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+    }
+  }, [router])
 
   const isFavorite = favorites.includes(pet.id)
 
@@ -111,7 +145,8 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
       }
 
       setFavorites(newFavorites)
-      localStorage.setItem("petFavorites", JSON.stringify(newFavorites))
+      // Use user-specific key for localStorage
+      localStorage.setItem(`petFavorites-${user.id}`, JSON.stringify(newFavorites))
     } catch (error) {
       console.error("Error toggling favorite:", error)
       toast({

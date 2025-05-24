@@ -44,8 +44,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Invalid user data" }, { status: 401 })
     }
 
-    // Verify the pet belongs to the user
-    const petResult = await query(`SELECT * FROM pets WHERE id = $1 AND user_id = $2`, [petId, user.id])
+    // Verify the pet belongs to the user (using owner_id)
+    const petResult = await query(`SELECT * FROM pets WHERE id = $1 AND owner_id = $2`, [petId, user.id])
 
     if (petResult.rows.length === 0) {
       return NextResponse.json({ error: "Pet not found or unauthorized" }, { status: 404 })

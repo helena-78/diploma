@@ -23,8 +23,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "Invalid user data" }, { status: 401 })
     }
 
-    // Verify the application belongs to the user
-    const applicationResult = await query(`SELECT * FROM adoption_applications WHERE id = $1 AND user_id = $2`, [
+    // Verify the application belongs to the user (using applicant_id)
+    const applicationResult = await query(`SELECT * FROM applications WHERE id = $1 AND applicant_id = $2`, [
       applicationId,
       user.id,
     ])
@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Update the application status
     await query(
-      `UPDATE adoption_applications 
+      `UPDATE applications 
        SET status = $1, updated_at = NOW() 
        WHERE id = $2`,
       [status, applicationId],

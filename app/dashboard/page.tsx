@@ -41,6 +41,7 @@ export default async function DashboardPage() {
       `
       SELECT * FROM pets
       WHERE owner_id = $1
+      ORDER BY created_at DESC
     `,
       [user.id],
     )

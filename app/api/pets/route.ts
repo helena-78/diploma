@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { query } from "@/lib/db"
+import { writeFile } from "fs/promises"
+import { join } from "path"
 
 export async function GET(request: NextRequest) {
   try {
@@ -107,5 +110,141 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching pets:", error)
     return NextResponse.json({ error: "Failed to fetch pets" }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Get user from cookies
+    const cookieStore = await cookies()
+    const userDataCookie = cookieStore.get("user-data")
+
+    if (!userDataCookie) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
+    }
+
+    let user
+    try {
+      user = JSON.parse(userDataCookie.value)
+    } catch (error) {
+      console.error("Error parsing user data:", error)
+      return NextResponse.json({ error: "Invalid user data" }, { status: 401 })
+    }
+
+    // Parse form data
+    const formData = await request.formData()
+
+    // Extract form fields
+    const name = formData.get("name") as string
+    const species = formData.get("species") as string
+    const breed = formData.get("breed") as string
+    const age = formData.get("age") as string
+    const ageCategory = formData.get("ageCategory") as string
+    const gender = formData.get("gender") as string
+    const size = formData.get("size") as string
+    const coatLength = formData.get("coatLength") as string
+    const goodWithKids = formData.get("goodWithKids") as string
+    const location = formData.get("location") as string
+    const city = formData.get("city") as string
+    const adoptionType = formData.get("adoptionType") as string
+    const description = formData.get("description") as string
+    const imageFile = formData.get("image") as File
+
+    // Validate required fields
+    if (
+      !name ||
+      !species ||
+      !breed ||
+      !age ||
+      !ageCategory ||
+      !gender ||
+      !size ||
+      !coatLength ||
+      !goodWithKids ||
+      !location ||
+      !city ||
+      !adoptionType
+    ) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    let imageUrl = "/placeholder.svg?height=400&width=600&query=cute pet"
+
+    // Handle image upload if provided
+    if (imageFile && imageFile.size > 0) {
+      try {
+        // Generate unique filename
+        const timestamp = Date.now()
+        const randomString = Math.random().toString(36).substring(2, 8)
+        const fileExtension = imageFile.name.split(".").pop()?.toLowerCase() || "jpg"
+        const fileName = `pet-${timestamp}-${randomString}.${fileExtension}`
+
+        // Convert file to buffer
+        const bytes = await imageFile.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+
+        // Ensure uploads directory exists
+        const uploadDir = join(process.cwd(), "public", "uploads")
+
+        // Create directory if it doesn't exist
+        try {
+          await import("fs").then((fs) => fs.promises.mkdir(uploadDir, { recursive: true }))
+        } catch (mkdirError) {
+          console.log("Upload directory already exists or created")
+        }
+
+        // Save file to uploads directory
+        const filePath = join(uploadDir, fileName)
+        await writeFile(filePath, buffer)
+
+        // Set the image URL path (this will be stored in the database)
+        imageUrl = `/uploads/${fileName}`
+
+        console.log(`Image saved successfully: ${imageUrl}`)
+      } catch (imageError) {
+        console.error("Error processing image:", imageError)
+        // Continue with placeholder image if image processing fails
+        console.log("Continuing with placeholder image due to upload error")
+      }
+    }
+
+    // Insert the new pet into the database
+    const result = await query(
+      `INSERT INTO pets (
+  name, species, breed, age, age_category, gender, size, coat_length, 
+  good_with_kids, location, city, adoption_type, description, image_url, 
+  owner_id, created_at, days_on_platform
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), 0)
+      RETURNING id`,
+      [
+        name,
+        species,
+        breed,
+        age,
+        ageCategory,
+        gender,
+        size,
+        coatLength,
+        goodWithKids,
+        location,
+        city,
+        adoptionType,
+        description || "",
+        imageUrl, // This will be either the uploaded image path or placeholder
+        user.id,
+      ],
+    )
+
+    const petId = result.rows[0].id
+
+    return NextResponse.json({
+      success: true,
+      petId,
+      imageUrl, // Return the image URL for confirmation
+      message: "Pet listing created successfully",
+    })
+  } catch (error) {
+    console.error("Error creating pet listing:", error)
+    return NextResponse.json({ error: "Failed to create pet listing" }, { status: 500 })
   }
 }

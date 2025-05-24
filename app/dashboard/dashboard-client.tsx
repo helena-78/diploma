@@ -29,7 +29,7 @@ interface Pet {
   days_on_platform: string
   adoption_type: string
   image_url: string
-  created_at?: string
+  created_at: string
   saved_at?: string
 }
 
@@ -388,7 +388,7 @@ export default function DashboardClient({ user, applications, publications, favo
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                           <p className="text-white text-xs">
-                            Listed {formatDistanceToNow(new Date(pet.created_at || Date.now()), { addSuffix: true })}
+                            Listed {formatDistanceToNow(new Date(pet.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>

@@ -40,9 +40,9 @@ interface Application {
   pet_image_url: string
   pet_breed: string
   status: string
-  message: string
+  description: string
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 interface DashboardClientProps {
@@ -288,7 +288,7 @@ export default function DashboardClient({ user, applications, publications, favo
 
                           <div className="mb-4">
                             <h4 className="text-sm font-medium text-gray-500 mb-1">Your Message</h4>
-                            <p className="text-gray-700">{application.message}</p>
+                            <p className="text-gray-700">{application.description}</p>
                           </div>
 
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center text-sm text-gray-500">

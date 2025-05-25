@@ -6,9 +6,9 @@ import PetDetailsClient from "./pet-details-client"
 export default async function PetDetailsPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const petId = params.id
+  const { id: petId } = await params
 
   try {
     // Fetch pet details from the database

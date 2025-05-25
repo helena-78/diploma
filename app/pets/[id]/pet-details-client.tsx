@@ -33,6 +33,7 @@ interface PetDetailsClientProps {
     adoption_type: string
     image_url: string
     description: string
+    owner_id: string
   }
   user: {
     id: string
@@ -46,10 +47,8 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
   const [favorites, setFavorites] = useState<string[]>([])
   const [isInquirySubmitted, setIsInquirySubmitted] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false)
   const [inquiryForm, setInquiryForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
     message: "",
   })
   const { toast } = useToast()
@@ -96,6 +95,7 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
   }, [router])
 
   const isFavorite = favorites.includes(pet.id)
+  const isOwnPet = user && user.id === pet.owner_id
 
   const toggleFavorite = async () => {
     if (!user) {
@@ -159,7 +159,7 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
     }
   }
 
-  const handleInquiryChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInquiryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setInquiryForm((prev) => ({
       ...prev,
@@ -167,11 +167,63 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
     }))
   }
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would send this data to your backend
-    console.log("Inquiry submitted:", inquiryForm)
-    setIsInquirySubmitted(true)
+
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to submit an adoption inquiry",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!inquiryForm.message.trim()) {
+      toast({
+        title: "Message required",
+        description: "Please enter a message for your adoption inquiry",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmittingInquiry(true)
+
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pet_id: pet.id,
+          description: inquiryForm.message,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to submit inquiry")
+      }
+
+      setIsInquirySubmitted(true)
+      setInquiryForm({ message: "" })
+
+      toast({
+        title: "Inquiry submitted!",
+        description: `Your adoption inquiry for ${pet.name} has been sent successfully.`,
+      })
+    } catch (error) {
+      console.error("Error submitting inquiry:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to submit inquiry. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmittingInquiry(false)
+    }
   }
 
   return (
@@ -322,14 +374,16 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
                     {pet.breed} · {pet.age_category}
                   </p>
                 </div>
-                <button
-                  onClick={toggleFavorite}
-                  disabled={isSaving}
-                  className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                >
-                  <Heart className={`w-6 h-6 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
-                </button>
+                {!isOwnPet && (
+                  <button
+                    onClick={toggleFavorite}
+                    disabled={isSaving}
+                    className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <Heart className={`w-6 h-6 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2 text-gray-600 mb-2">
@@ -344,121 +398,102 @@ export default function PetDetailsClient({ pet, user }: PetDetailsClientProps) {
                 <span>On platform for {pet.days_on_platform} days</span>
               </div>
 
-              <div className="flex gap-2 mb-6">
-                <Button className="flex-1">Adopt Me</Button>
-                <Button variant="outline" size="icon">
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-500 mt-0.5" />
-                <div>
-                  <p className="text-sm text-blue-800">
-                    Interested in {pet.name}? Fill out the inquiry form below to get in touch with the owner.
-                  </p>
+              {!isOwnPet && (
+                <div className="flex gap-2 mb-6">
+                  <Button
+                    className="flex-1"
+                    onClick={() => document.getElementById("inquiry-form")?.scrollIntoView({ behavior: "smooth" })}
+                  >
+                    Adopt Me
+                  </Button>
+                  <Button variant="outline" size="icon">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
                 </div>
-              </div>
+              )}
+
+              {isOwnPet ? (
+                <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-blue-800">
+                      This is your pet listing. You can manage it from your dashboard.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-blue-800">
+                      Interested in {pet.name}? Fill out the inquiry form below to get in touch with the owner.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Adoption inquiry form */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Adoption Inquiry</h2>
+            {!isOwnPet && (
+              <div id="inquiry-form" className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-semibold mb-4">Adoption Inquiry</h2>
 
-              {isInquirySubmitted ? (
-                <div className="text-center py-6">
-                  <div className="text-green-500 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-16 w-16 mx-auto"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                {isInquirySubmitted ? (
+                  <div className="text-center py-6">
+                    <div className="text-green-500 mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-16 w-16 mx-auto"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">Inquiry Sent!</h3>
+                    <p className="text-gray-500 mb-6">
+                      Thank you for your interest in {pet.name}. The owner will contact you soon.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button onClick={() => setIsInquirySubmitted(false)}>Send Another Inquiry</Button>
+                      <Link href="/dashboard">
+                        <Button variant="outline">View My Applications</Button>
+                      </Link>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">Inquiry Sent!</h3>
-                  <p className="text-gray-500 mb-6">
-                    Thank you for your interest in {pet.name}. The owner will contact you soon.
-                  </p>
-                  <Button onClick={() => setIsInquirySubmitted(false)}>Send Another Inquiry</Button>
-                </div>
-              ) : (
-                <form onSubmit={handleInquirySubmit}>
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                        Your Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        required
-                        value={inquiryForm.name}
-                        onChange={handleInquiryChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
+                ) : (
+                  <form onSubmit={handleInquirySubmit}>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                          Message *
+                        </label>
+                        <textarea
+                          id="message"
+                          name="message"
+                          rows={4}
+                          required
+                          value={inquiryForm.message}
+                          onChange={handleInquiryChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder={`Hi, I'm interested in adopting ${pet.name}. I would love to learn more about their personality and care requirements...`}
+                        />
+                      </div>
 
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        value={inquiryForm.email}
-                        onChange={handleInquiryChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
+                      <Button type="submit" className="w-full" disabled={isSubmittingInquiry}>
+                        {isSubmittingInquiry ? "Sending Inquiry..." : "Send Inquiry"}
+                      </Button>
                     </div>
-
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        value={inquiryForm.phone}
-                        onChange={handleInquiryChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                        Message
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={4}
-                        required
-                        value={inquiryForm.message}
-                        onChange={handleInquiryChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        placeholder={`Hi, I'm interested in adopting ${pet.name}...`}
-                      ></textarea>
-                    </div>
-
-                    <Button type="submit" className="w-full">
-                      Send Inquiry
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </div>
+                  </form>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>

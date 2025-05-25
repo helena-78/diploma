@@ -19,6 +19,8 @@ import {
   X,
   User,
   Mail,
+  FileText,
+  Download,
 } from "lucide-react"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
@@ -61,6 +63,7 @@ interface Application {
   owner_first_name: string
   owner_last_name: string
   owner_email: string
+  passport_path: string | null
 }
 
 interface Inquiry {
@@ -255,6 +258,17 @@ export default function DashboardClient({
     }
   }
 
+  const handleDownloadPassport = (passportPath: string, petName: string) => {
+    // Create a temporary link element to trigger download
+    const link = document.createElement("a")
+    link.href = passportPath
+    link.download = `${petName}_passport.pdf`
+    link.target = "_blank"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -415,6 +429,59 @@ export default function DashboardClient({
                                     </a>
                                   </span>
                                 </div>
+
+                                {application.passport_path && (
+                                  <div className="mt-3 pt-3 border-t border-green-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <FileText className="w-4 h-4 text-green-600" />
+                                      <span className="text-green-700 font-medium">Pet Passport Available</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-2 bg-white rounded-md p-2 border border-green-300">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-5 w-5 text-red-500"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                          />
+                                        </svg>
+                                        <span className="text-sm text-gray-700">
+                                          {application.pet_name}_passport.pdf
+                                        </span>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="flex items-center gap-1 text-green-700 border-green-300 hover:bg-green-100"
+                                          onClick={() => window.open(application.passport_path!, "_blank")}
+                                        >
+                                          <ExternalLink className="w-3 h-3" />
+                                          View
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="flex items-center gap-1 text-green-700 border-green-300 hover:bg-green-100"
+                                          onClick={() =>
+                                            handleDownloadPassport(application.passport_path!, application.pet_name)
+                                          }
+                                        >
+                                          <Download className="w-3 h-3" />
+                                          Download
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
                                 <p className="text-green-600 text-xs mt-2">
                                   You can now contact the pet owner directly to arrange the adoption process.
                                 </p>

@@ -58,6 +58,9 @@ interface Application {
   description: string
   created_at: string
   updated_at?: string
+  owner_first_name: string
+  owner_last_name: string
+  owner_email: string
 }
 
 interface Inquiry {
@@ -386,6 +389,38 @@ export default function DashboardClient({
                             <h4 className="text-sm font-medium text-gray-500 mb-1">Your Message</h4>
                             <p className="text-gray-700">{application.description}</p>
                           </div>
+
+                          {application.status === "approved" && (
+                            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                              <h4 className="text-sm font-medium text-green-800 mb-2 flex items-center gap-2">
+                                <Check className="w-4 h-4" />
+                                Application Approved - Contact Information
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <User className="w-4 h-4 text-green-600" />
+                                  <span className="text-green-700">
+                                    <strong>Owner:</strong> {application.owner_first_name} {application.owner_last_name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-4 h-4 text-green-600" />
+                                  <span className="text-green-700">
+                                    <strong>Email:</strong>
+                                    <a
+                                      href={`mailto:${application.owner_email}`}
+                                      className="ml-1 underline hover:text-green-800"
+                                    >
+                                      {application.owner_email}
+                                    </a>
+                                  </span>
+                                </div>
+                                <p className="text-green-600 text-xs mt-2">
+                                  You can now contact the pet owner directly to arrange the adoption process.
+                                </p>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center text-sm text-gray-500">
                             <div className="flex items-center">
@@ -760,7 +795,7 @@ export default function DashboardClient({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={1}
-                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                       />
                     </svg>
                   </div>

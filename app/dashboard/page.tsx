@@ -27,9 +27,11 @@ export default async function DashboardPage() {
     // Fetch user's adoption applications
     const applicationsResult = await query(
       `
-      SELECT a.*, p.name as pet_name, p.image_url as pet_image_url, p.breed as pet_breed
+      SELECT a.*, p.name as pet_name, p.image_url as pet_image_url, p.breed as pet_breed,
+         owner.first_name as owner_first_name, owner.last_name as owner_last_name, owner.email as owner_email
       FROM applications a
       JOIN pets p ON a.pet_id = p.id
+      JOIN users owner ON p.owner_id = owner.id
       WHERE a.applicant_id = $1
       ORDER BY a.created_at DESC
     `,

@@ -4,7 +4,22 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Facebook, Instagram, Youtube, Plus, Edit, Trash2, ExternalLink, Clock, XCircle, Search } from "lucide-react"
+import {
+  Facebook,
+  Instagram,
+  Youtube,
+  Plus,
+  Edit,
+  Trash2,
+  ExternalLink,
+  Clock,
+  XCircle,
+  Search,
+  Check,
+  X,
+  User,
+  Mail,
+} from "lucide-react"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -45,6 +60,20 @@ interface Application {
   updated_at?: string
 }
 
+interface Inquiry {
+  id: string
+  pet_id: string
+  pet_name: string
+  pet_image_url: string
+  pet_breed: string
+  status: string
+  description: string
+  created_at: string
+  applicant_first_name: string
+  applicant_last_name: string
+  applicant_email: string
+}
+
 interface DashboardClientProps {
   user: {
     id: string
@@ -55,13 +84,21 @@ interface DashboardClientProps {
   applications: Application[]
   publications: Pet[]
   favorites: Pet[]
+  inquiries: Inquiry[]
 }
 
-export default function DashboardClient({ user, applications, publications, favorites }: DashboardClientProps) {
+export default function DashboardClient({
+  user,
+  applications,
+  publications,
+  favorites,
+  inquiries,
+}: DashboardClientProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({})
   const [isWithdrawing, setIsWithdrawing] = useState<Record<string, boolean>>({})
+  const [isProcessing, setIsProcessing] = useState<Record<string, boolean>>({})
 
   const handleDeletePublication = async (petId: string) => {
     if (confirm("Are you sure you want to delete this pet listing? This action cannot be undone.")) {
@@ -129,6 +166,44 @@ export default function DashboardClient({ user, applications, publications, favo
         })
       } finally {
         setIsWithdrawing((prev) => ({ ...prev, [applicationId]: false }))
+      }
+    }
+  }
+
+  const handleInquiryResponse = async (inquiryId: string, status: "approved" | "rejected") => {
+    const action = status === "approved" ? "approve" : "reject"
+    if (confirm(`Are you sure you want to ${action} this application?`)) {
+      try {
+        setIsProcessing((prev) => ({ ...prev, [inquiryId]: true }))
+
+        const response = await fetch(`/api/applications/${inquiryId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status }),
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to ${action} application`)
+        }
+
+        toast({
+          title: `Application ${status}`,
+          description: `The adoption application has been ${status}`,
+        })
+
+        // Refresh the page to update the inquiries
+        router.refresh()
+      } catch (error) {
+        console.error(`Error ${action}ing application:`, error)
+        toast({
+          title: "Error",
+          description: `Failed to ${action} application. Please try again.`,
+          variant: "destructive",
+        })
+      } finally {
+        setIsProcessing((prev) => ({ ...prev, [inquiryId]: false }))
       }
     }
   }
@@ -228,6 +303,14 @@ export default function DashboardClient({ user, applications, publications, favo
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="inquiries" className="flex-1">
+              Inquiries
+              {inquiries.length > 0 && (
+                <span className="ml-2 bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-xs">
+                  {inquiries.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="publications" className="flex-1">
               My Listings
               {publications.length > 0 && (
@@ -324,6 +407,126 @@ export default function DashboardClient({ user, applications, publications, favo
                                     </>
                                   )}
                                 </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Inquiries Tab */}
+          <TabsContent value="inquiries">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Adoption Inquiries</h2>
+                <p className="text-sm text-gray-500">Applications for your pet listings</p>
+              </div>
+
+              {inquiries.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <Mail className="h-16 w-16 mx-auto" />
+                  </div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">No inquiries yet</h3>
+                  <p className="text-gray-500 mb-6">You haven't received any adoption inquiries for your pets</p>
+                  <Link href="/pets/create">
+                    <Button>List a Pet</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {inquiries.map((inquiry) => (
+                    <div key={inquiry.id} className="border rounded-lg overflow-hidden">
+                      <div className="flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/4 h-48 md:h-auto relative">
+                          <CloudinaryImage
+                            src={inquiry.pet_image_url || "/placeholder.svg?height=400&width=300&query=cute pet"}
+                            alt={inquiry.pet_name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="p-4 md:p-6 flex-1">
+                          <div className="flex flex-col md:flex-row justify-between mb-4">
+                            <div>
+                              <h3 className="text-xl font-bold">{inquiry.pet_name}</h3>
+                              <p className="text-gray-600">{inquiry.pet_breed}</p>
+                            </div>
+                            <div className="mt-2 md:mt-0">{getStatusBadge(inquiry.status)}</div>
+                          </div>
+
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Applicant</h4>
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <User className="w-4 h-4" />
+                              <span>
+                                {inquiry.applicant_first_name} {inquiry.applicant_last_name}
+                              </span>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-600">{inquiry.applicant_email}</span>
+                            </div>
+                          </div>
+
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Message</h4>
+                            <p className="text-gray-700">{inquiry.description}</p>
+                          </div>
+
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center text-sm text-gray-500">
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              <span>
+                                Received {formatDistanceToNow(new Date(inquiry.created_at), { addSuffix: true })}
+                              </span>
+                            </div>
+
+                            <div className="flex gap-2 mt-4 md:mt-0">
+                              <Link href={`/pets/${inquiry.pet_id}`}>
+                                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                                  <ExternalLink className="w-3 h-3" />
+                                  View Pet
+                                </Button>
+                              </Link>
+
+                              {inquiry.status === "pending" && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
+                                    onClick={() => handleInquiryResponse(inquiry.id, "approved")}
+                                    disabled={isProcessing[inquiry.id]}
+                                  >
+                                    {isProcessing[inquiry.id] ? (
+                                      "Processing..."
+                                    ) : (
+                                      <>
+                                        <Check className="w-3 h-3" />
+                                        Approve
+                                      </>
+                                    )}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => handleInquiryResponse(inquiry.id, "rejected")}
+                                    disabled={isProcessing[inquiry.id]}
+                                  >
+                                    {isProcessing[inquiry.id] ? (
+                                      "Processing..."
+                                    ) : (
+                                      <>
+                                        <X className="w-3 h-3" />
+                                        Reject
+                                      </>
+                                    )}
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>

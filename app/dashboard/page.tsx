@@ -58,12 +58,27 @@ export default async function DashboardPage() {
       [user.id],
     )
 
+    // Fetch inquiries for user's pets (applications from other users)
+    const inquiriesResult = await query(
+      `
+      SELECT a.*, p.name as pet_name, p.image_url as pet_image_url, p.breed as pet_breed,
+             u.first_name as applicant_first_name, u.last_name as applicant_last_name, u.email as applicant_email
+      FROM applications a
+      JOIN pets p ON a.pet_id = p.id
+      JOIN users u ON a.applicant_id = u.id
+      WHERE p.owner_id = $1
+      ORDER BY a.created_at DESC
+    `,
+      [user.id],
+    )
+
     return (
       <DashboardClient
         user={user}
         applications={applicationsResult.rows}
         publications={publicationsResult.rows}
         favorites={favoritesResult.rows}
+        inquiries={inquiriesResult.rows}
       />
     )
   } catch (error) {

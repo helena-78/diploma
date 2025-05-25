@@ -33,6 +33,8 @@ export default function CreatePetForm({ user, species, breeds, cities }: CreateP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null)
+  const [pdfFileName, setPdfFileName] = useState<string>("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState({
@@ -91,6 +93,39 @@ export default function CreatePetForm({ user, species, breeds, cities }: CreateP
     }
   }
 
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (file.type !== "application/pdf") {
+        toast({
+          title: "Invalid file type",
+          description: "Please select a PDF file",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate file size (10MB limit for PDFs)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select a PDF file smaller than 10MB",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setSelectedPdf(file)
+      setPdfFileName(file.name)
+    }
+  }
+
+  const removePdf = () => {
+    setSelectedPdf(null)
+    setPdfFileName("")
+  }
+
   const removeImage = () => {
     setSelectedImage(null)
     setImagePreview(null)
@@ -147,6 +182,11 @@ export default function CreatePetForm({ user, species, breeds, cities }: CreateP
       // Add image if selected
       if (selectedImage) {
         submitData.append("image", selectedImage)
+      }
+
+      // Add PDF if selected
+      if (selectedPdf) {
+        submitData.append("passport", selectedPdf)
       }
 
       const response = await fetch("/api/pets", {
@@ -212,7 +252,7 @@ export default function CreatePetForm({ user, species, breeds, cities }: CreateP
               strokeLinejoin="round"
               className="w-5 h-5 text-red-500"
             >
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
             </svg>
             <span className="sr-only">Favorites</span>
           </Link>
@@ -269,6 +309,76 @@ export default function CreatePetForm({ user, species, breeds, cities }: CreateP
                     >
                       <X className="h-4 w-4" />
                     </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Pet Passport Document */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Pet Passport (Optional)</h2>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload your pet's passport or medical records (PDF format only, max 10MB)
+                </p>
+                {!selectedPdf ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12 text-gray-400 mx-auto mb-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <p className="text-gray-600 mb-2">Upload pet passport document</p>
+                    <p className="text-sm text-gray-500 mb-4">PDF only (max 10MB)</p>
+                    <label htmlFor="pdf-upload" className="cursor-pointer">
+                      <Button type="button" variant="outline" className="pointer-events-none">
+                        Choose PDF File
+                      </Button>
+                      <input
+                        id="pdf-upload"
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={handlePdfChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="border border-gray-300 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 w-8 text-red-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <div>
+                          <p className="font-medium text-gray-900">{pdfFileName}</p>
+                          <p className="text-sm text-gray-500">PDF Document</p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={removePdf} className="text-red-500 hover:text-red-700 p-1">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

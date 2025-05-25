@@ -208,14 +208,54 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let passportPath = null
+
+    // Handle PDF passport upload if provided
+    const passportFile = formData.get("passport") as File
+    if (passportFile && passportFile.size > 0) {
+      try {
+        // Generate unique filename for PDF
+        const timestamp = Date.now()
+        const randomString = Math.random().toString(36).substring(2, 8)
+        const fileName = `passport-${timestamp}-${randomString}.pdf`
+
+        // Convert file to buffer
+        const bytes = await passportFile.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+
+        // Ensure documents directory exists
+        const documentsDir = join(process.cwd(), "public", "documents")
+
+        // Create directory if it doesn't exist
+        try {
+          await import("fs").then((fs) => fs.promises.mkdir(documentsDir, { recursive: true }))
+        } catch (mkdirError) {
+          console.log("Documents directory already exists or created")
+        }
+
+        // Save file to documents directory
+        const filePath = join(documentsDir, fileName)
+        await writeFile(filePath, buffer)
+
+        // Set the passport path (this will be stored in the database)
+        passportPath = `/documents/${fileName}`
+
+        console.log(`PDF passport saved successfully: ${passportPath}`)
+      } catch (pdfError) {
+        console.error("Error processing PDF passport:", pdfError)
+        // Continue without passport if PDF processing fails
+        console.log("Continuing without passport due to upload error")
+      }
+    }
+
     // Insert the new pet into the database
     const result = await query(
       `INSERT INTO pets (
-  name, species, breed, age, age_category, gender, size, coat_length, 
-  good_with_kids, location, city, adoption_type, description, image_url, 
-  owner_id, created_at, days_on_platform
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), 0)
-      RETURNING id`,
+    name, species, breed, age, age_category, gender, size, coat_length, 
+    good_with_kids, location, city, adoption_type, description, image_url, 
+    passport_path, owner_id, created_at, days_on_platform
+  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), 0)
+  RETURNING id`,
       [
         name,
         species,
@@ -230,7 +270,8 @@ export async function POST(request: NextRequest) {
         city,
         adoptionType,
         description || "",
-        imageUrl, // This will be either the uploaded image path or placeholder
+        imageUrl,
+        passportPath, // Add passport path here
         user.id,
       ],
     )
@@ -240,7 +281,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       petId,
-      imageUrl, // Return the image URL for confirmation
+      imageUrl,
+      passportPath,
       message: "Pet listing created successfully",
     })
   } catch (error) {

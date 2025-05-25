@@ -19,12 +19,16 @@ const nextConfig = {
     domains: ['localhost'],
     unoptimized: true,
   },
-  // Enable static file serving for uploads
+  // Enable static file serving for uploads and documents
   async rewrites() {
     return [
       {
         source: '/uploads/:path*',
         destination: '/uploads/:path*',
+      },
+      {
+        source: '/documents/:path*',
+        destination: '/documents/:path*',
       },
     ]
   },

@@ -72,6 +72,11 @@ interface Inquiry {
   applicant_first_name: string
   applicant_last_name: string
   applicant_email: string
+  has_pet_experience: boolean | null
+  has_allergies: boolean | null
+  living_space: string | null
+  pet_spending: string | null
+  time_commitment: string | null
 }
 
 interface DashboardClientProps {
@@ -176,6 +181,8 @@ export default function DashboardClient({
       try {
         setIsProcessing((prev) => ({ ...prev, [inquiryId]: true }))
 
+        console.log(`Sending ${action} request for application ${inquiryId} with status: ${status}`)
+
         const response = await fetch(`/api/applications/${inquiryId}`, {
           method: "PATCH",
           headers: {
@@ -185,12 +192,18 @@ export default function DashboardClient({
         })
 
         if (!response.ok) {
-          throw new Error(`Failed to ${action} application`)
+          const errorData = await response.json()
+          console.error(`Error ${action}ing application:`, errorData)
+          throw new Error(errorData.error || `Failed to ${action} application`)
         }
+
+        const result = await response.json()
+        console.log(`Successfully ${status} application:`, result)
 
         toast({
           title: `Application ${status}`,
           description: `The adoption application has been ${status}`,
+          variant: status === "approved" ? "default" : "destructive",
         })
 
         // Refresh the page to update the inquiries
@@ -272,7 +285,7 @@ export default function DashboardClient({
               strokeLinejoin="round"
               className="w-5 h-5 text-red-500"
             >
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
             </svg>
             <span className="sr-only">Favorites</span>
           </Link>
@@ -469,6 +482,78 @@ export default function DashboardClient({
                               </span>
                               <span className="text-gray-400">•</span>
                               <span className="text-gray-600">{inquiry.applicant_email}</span>
+                            </div>
+                          </div>
+
+                          {/* Add applicant preferences section */}
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-2">Applicant Profile</h4>
+                            <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Pet Experience:</span>
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      inquiry.has_pet_experience === true
+                                        ? "bg-green-100 text-green-800"
+                                        : inquiry.has_pet_experience === false
+                                          ? "bg-red-100 text-red-800"
+                                          : "bg-gray-100 text-gray-800"
+                                    }`}
+                                  >
+                                    {inquiry.has_pet_experience === true
+                                      ? "Yes"
+                                      : inquiry.has_pet_experience === false
+                                        ? "No"
+                                        : "Not specified"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Allergies:</span>
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      inquiry.has_allergies === true
+                                        ? "bg-red-100 text-red-800"
+                                        : inquiry.has_allergies === false
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-gray-100 text-gray-800"
+                                    }`}
+                                  >
+                                    {inquiry.has_allergies === true
+                                      ? "Yes"
+                                      : inquiry.has_allergies === false
+                                        ? "No"
+                                        : "Not specified"}
+                                  </span>
+                                </div>
+                                {inquiry.living_space && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">Living Space:</span>
+                                    <span className="font-medium">{inquiry.living_space}</span>
+                                  </div>
+                                )}
+                                {inquiry.pet_spending && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">Pet Spending:</span>
+                                    <span className="font-medium">{inquiry.pet_spending}</span>
+                                  </div>
+                                )}
+                                {inquiry.time_commitment && (
+                                  <div className="flex items-center gap-2 md:col-span-2">
+                                    <span className="text-gray-600">Time Commitment:</span>
+                                    <span className="font-medium">{inquiry.time_commitment}</span>
+                                  </div>
+                                )}
+                              </div>
+                              {!inquiry.has_pet_experience &&
+                                !inquiry.has_allergies &&
+                                !inquiry.living_space &&
+                                !inquiry.pet_spending &&
+                                !inquiry.time_commitment && (
+                                  <div className="text-center text-gray-500 text-sm py-2">
+                                    No profile information available
+                                  </div>
+                                )}
                             </div>
                           </div>
 

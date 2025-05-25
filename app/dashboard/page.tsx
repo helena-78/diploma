@@ -62,10 +62,12 @@ export default async function DashboardPage() {
     const inquiriesResult = await query(
       `
       SELECT a.*, p.name as pet_name, p.image_url as pet_image_url, p.breed as pet_breed,
-             u.first_name as applicant_first_name, u.last_name as applicant_last_name, u.email as applicant_email
+             u.first_name as applicant_first_name, u.last_name as applicant_last_name, u.email as applicant_email,
+             up.has_pet_experience, up.has_allergies, up.living_space, up.pet_spending, up.time_commitment
       FROM applications a
       JOIN pets p ON a.pet_id = p.id
       JOIN users u ON a.applicant_id = u.id
+      LEFT JOIN user_preferences up ON u.id = up.user_id
       WHERE p.owner_id = $1
       ORDER BY a.created_at DESC
     `,

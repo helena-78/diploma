@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { Heart, MapPin } from "lucide-react"
-import CloudinaryImage from "./cloudinary-image"
+import CloudinaryImage from "./image"
 
 interface PetCardProps {
   name: string

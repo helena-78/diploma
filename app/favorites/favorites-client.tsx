@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Facebook, Instagram, Youtube, Trash2, Search } from "lucide-react"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
-import CloudinaryImage from "@/components/cloudinary-image"
+import CloudinaryImage from "@/components/image"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow } from "@/lib/date-utils"
 

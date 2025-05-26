@@ -11,7 +11,7 @@ import { SignUpButton } from "@/components/sign-up-button"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import CloudinaryImage from "@/components/cloudinary-image"
+import CloudinaryImage from "@/components/image"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 

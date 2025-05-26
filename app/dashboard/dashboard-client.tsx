@@ -26,7 +26,7 @@ import { UserAccountNav } from "@/components/auth/user-account-nav"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import CloudinaryImage from "@/components/cloudinary-image"
+import CloudinaryImage from "@/components/image"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow } from "@/lib/date-utils"
 

@@ -3,9 +3,9 @@
 import type React from "react"
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Facebook, Instagram, Youtube, Search, Filter } from "lucide-react"
 import { LoginButton } from "@/components/auth/login-button"
 import { SignUpButton } from "@/components/sign-up-button"
@@ -44,11 +44,14 @@ interface SearchPageClientProps {
 
 export default function SearchPageClient({ user }: SearchPageClientProps) {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const [favorites, setFavorites] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Initialize filters from URL parameters
   const [activeFilters, setActiveFilters] = useState<FilterValues>({
-    species: "Any",
+    species: searchParams.get("species") || "Any",
     breed: "Any",
     age: "Any",
     size: "Any",
@@ -131,6 +134,17 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
 
     return () => clearTimeout(timeoutId)
   }, [activeFilters, searchQuery])
+
+  // Handle URL parameter changes
+  useEffect(() => {
+    const species = searchParams.get("species")
+    if (species && species !== activeFilters.species) {
+      setActiveFilters((prev) => ({
+        ...prev,
+        species: species,
+      }))
+    }
+  }, [searchParams])
 
   const handleFiltersChange = (filters: FilterValues) => {
     setActiveFilters(filters)
@@ -220,8 +234,8 @@ export default function SearchPageClient({ user }: SearchPageClientProps) {
           <Link href="/about" className="text-sm font-medium">
             ABOUT US
           </Link>
-          <Link href="/how-it-works" className="text-sm font-medium">
-            HOW IT WORKS
+          <Link href="/faq" className="text-sm font-medium">
+            FAQ
           </Link>
         </nav>
 

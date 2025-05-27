@@ -1,7 +1,7 @@
 import { cookies } from "next/headers"
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Youtube, Search } from "lucide-react"
+import { Facebook, Instagram, Youtube } from "lucide-react"
 import { LoginButton } from "@/components/auth/login-button"
 import { SignUpButton } from "@/components/sign-up-button"
 import { UserAccountNav } from "@/components/auth/user-account-nav"
@@ -23,14 +23,8 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col font-serif">
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
-          <Image 
-          src="/logo.svg" 
-          alt="Logo" 
-          width={32} 
-          height={32} 
-          className="w-8 h-8"
-        />
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} className="w-8 h-8" />
           <span className="font-semibold text-lg">Pet Adoption Network</span>
         </Link>
 
@@ -41,8 +35,8 @@ export default async function Home() {
           <Link href="/about" className="text-sm font-medium">
             ABOUT US
           </Link>
-          <Link href="/how-it-works" className="text-sm font-medium">
-            HOW IT WORKS
+          <Link href="/faq" className="text-sm font-medium">
+            FAQ
           </Link>
         </nav>
 
@@ -64,26 +58,64 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col md:flex-row bg-gray-50">
+      <main className="flex-1 flex flex-col bg-gray-50">
         <div className="container mx-auto px-4 py-12 relative z-10 flex flex-col items-center">
           <div className="max-w-[600px] text-center">
             <h1 className="text-[40px] leading-[1.2] font-serif mb-4">
               Get your family
               <br />a new member.
             </h1>
-            <p className="text-lg mb-8">Open your doors and hearts to pets in need of a home</p>
+            <p className="text-lg mb-12 text-gray-600">Open your doors and hearts to pets in need of a home</p>
 
-            <div className="flex gap-4 max-w-[500px] mx-auto">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Zip code or City"
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              </div>
+            <div className="flex justify-center gap-16 max-w-[500px] mx-auto">
+              <Link href="/search?species=Dog" className="group">
+                <div className="flex flex-col items-center gap-4 p-6 hover:bg-gray-50 rounded-lg transition-colors">
+                  {/* Dog Icon from SVG file */}
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <Image
+                      src="/dog.svg"
+                      alt="Dog"
+                      width={64}
+                      height={64}
+                      className="text-purple-600 group-hover:opacity-80 transition-opacity"
+                    />
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg">Dogs</span>
+                </div>
+              </Link>
+
+              <Link href="/search?species=Cat" className="group">
+                <div className="flex flex-col items-center gap-4 p-6 hover:bg-gray-50 rounded-lg transition-colors">
+                  {/* Cat Icon */}
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <Image
+                      src="/cat.svg"
+                      alt="Dog"
+                      width={64}
+                      height={64}
+                      className="text-purple-600 group-hover:opacity-80 transition-opacity"
+                    />
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg">Cats</span>
+                </div>
+              </Link>
+
+              <Link href="/search?species=Other" className="group">
+                <div className="flex flex-col items-center gap-4 p-6 hover:bg-gray-50 rounded-lg transition-colors">
+                  {/* Paw Icon */}
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <Image
+                      src="/paw.svg"
+                      alt="Dog"
+                      width={64}
+                      height={64}
+                      className="text-purple-600 group-hover:opacity-80 transition-opacity"
+                    />
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg">Other</span>
+                </div>
+              </Link>
             </div>
-
           </div>
         </div>
       </main>

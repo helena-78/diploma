@@ -112,8 +112,8 @@ export default function FavoritesClient({ user, savedPets: initialSavedPets }: F
           <Link href="/about" className="text-sm font-medium">
             ABOUT US
           </Link>
-          <Link href="/how-it-works" className="text-sm font-medium">
-            HOW IT WORKS
+          <Link href="/faq" className="text-sm font-medium">
+            FAQ
           </Link>
         </nav>
 
